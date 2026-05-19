@@ -1,0 +1,27 @@
+import XLSX from "xlsx";
+
+const excelGenerator = (
+  data,
+  fileName
+) => {
+  const worksheet =
+    XLSX.utils.json_to_sheet(data);
+
+  const workbook =
+    XLSX.utils.book_new();
+
+  XLSX.utils.book_append_sheet(
+    workbook,
+    worksheet,
+    "Sheet1"
+  );
+
+  XLSX.writeFile(
+    workbook,
+    `uploads/${fileName}.xlsx`
+  );
+
+  return `${fileName}.xlsx`;
+};
+
+export default excelGenerator;
