@@ -26,6 +26,11 @@ app.use("/api/labours", labourRoutes);
 app.use("/api/finance", financeRoutes);
 app.use("/api/reports", reportRoutes);
 
+
+app.get("/", (req, res) => {
+  res.send("Construction Management Backend Running");
+});
+
 const PORT = process.env.PORT || 5000;
 
 try {
