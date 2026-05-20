@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
 import { deleteMaterial, getMaterials } from "../../services/materialService";
+import ExcelExport from "../reports/ExcelExport";
+import PDFExport from "../reports/PDFExport";
+import isConnectionError from "../../utils/isConnectionError";
 
 function MaterialTable() {
   const [materials, setMaterials] = useState([]);
@@ -13,6 +16,12 @@ function MaterialTable() {
       setMaterials(data.materials || []);
       setError("");
     } catch (err) {
+      if (isConnectionError(err)) {
+        setMaterials([]);
+        setError("");
+        return;
+      }
+
       setError(err.response?.data?.message || "Could not load materials");
     } finally {
       setLoading(false);
@@ -33,6 +42,16 @@ function MaterialTable() {
     loadMaterials();
   };
 
+  const exportColumns = [
+    { key: "material_name", label: "Material Name" },
+    { key: "site_name", label: "Site" },
+    { key: "unit", label: "Unit" },
+    { key: "total_received", label: "Received" },
+    { key: "total_used", label: "Used" },
+    { key: "remaining_stock", label: "Remaining" },
+    { key: "total_cost", label: "Cost" },
+  ];
+
   return (
     <div
       style={{
@@ -43,15 +62,46 @@ function MaterialTable() {
         overflowX: "auto",
       }}
     >
-      <h2
+      <div
         style={{
-          fontSize: "24px",
-          fontWeight: "700",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          gap: "15px",
+          flexWrap: "wrap",
           marginBottom: "20px",
         }}
       >
-        Materials List
-      </h2>
+        <h2
+          style={{
+            fontSize: "24px",
+            fontWeight: "700",
+            margin: 0,
+          }}
+        >
+          Materials List
+        </h2>
+
+        <div
+          style={{
+            display: "flex",
+            gap: "10px",
+            flexWrap: "wrap",
+          }}
+        >
+          <PDFExport
+            data={materials}
+            columns={exportColumns}
+            fileName="Material Report"
+          />
+
+          <ExcelExport
+            data={materials}
+            columns={exportColumns}
+            fileName="Material Report"
+          />
+        </div>
+      </div>
 
       <table
         style={{
@@ -62,7 +112,10 @@ function MaterialTable() {
         <thead>
           <tr>
             <th style={tableHead}>Material Name</th>
+            <th style={tableHead}>Site</th>
             <th style={tableHead}>Unit</th>
+            <th style={tableHead}>Received</th>
+            <th style={tableHead}>Remaining</th>
             <th style={tableHead}>Action</th>
           </tr>
         </thead>
@@ -70,26 +123,29 @@ function MaterialTable() {
         <tbody>
           {loading && (
             <tr>
-              <td style={tableData} colSpan="3">Loading...</td>
+              <td style={tableData} colSpan="6">Loading...</td>
             </tr>
           )}
 
           {!loading && error && (
             <tr>
-              <td style={tableData} colSpan="3">{error}</td>
+              <td style={tableData} colSpan="6">{error}</td>
             </tr>
           )}
 
           {!loading && !error && materials.length === 0 && (
             <tr>
-              <td style={tableData} colSpan="3">No materials yet</td>
+              <td style={tableData} colSpan="6">No materials yet</td>
             </tr>
           )}
 
           {!loading && !error && materials.map((material) => (
             <tr key={material.id}>
               <td style={tableData}>{material.material_name}</td>
+              <td style={tableData}>{material.site_name || "-"}</td>
               <td style={tableData}>{material.unit}</td>
+              <td style={tableData}>{material.total_received || 0}</td>
+              <td style={tableData}>{material.remaining_stock || 0}</td>
               <td style={tableData}>
                 <button type="button" onClick={() => handleDelete(material.id)}>
                   Delete

@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
 import { deleteLabour, getLabours } from "../../services/labourService";
+import ExcelExport from "../reports/ExcelExport";
+import PDFExport from "../reports/PDFExport";
+import isConnectionError from "../../utils/isConnectionError";
 
 function LabourTable() {
   const [labours, setLabours] = useState([]);
@@ -13,6 +16,12 @@ function LabourTable() {
       setLabours(data.labours || []);
       setError("");
     } catch (err) {
+      if (isConnectionError(err)) {
+        setLabours([]);
+        setError("");
+        return;
+      }
+
       setError(err.response?.data?.message || "Could not load labour");
     } finally {
       setLoading(false);
@@ -33,16 +42,61 @@ function LabourTable() {
     loadLabours();
   };
 
+  const exportColumns = [
+    { key: "labour_name", label: "Labour Name" },
+    { key: "contact_number", label: "Contact" },
+    { key: "site_name", label: "Site" },
+    { key: "daily_wage", label: "Daily Wage" },
+    { key: "attendance_count", label: "Attendance" },
+    { key: "total_wage", label: "Total Wage" },
+    { key: "pending_amount", label: "Pending" },
+  ];
+
   return (
     <div style={tableWrapStyle}>
-      <h2 style={headingStyle}>Labour List</h2>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          gap: "15px",
+          flexWrap: "wrap",
+          marginBottom: "20px",
+        }}
+      >
+        <h2 style={{ ...headingStyle, marginBottom: 0 }}>Labour List</h2>
+
+        <div
+          style={{
+            display: "flex",
+            gap: "10px",
+            flexWrap: "wrap",
+          }}
+        >
+          <PDFExport
+            data={labours}
+            columns={exportColumns}
+            fileName="Labour Report"
+          />
+
+          <ExcelExport
+            data={labours}
+            columns={exportColumns}
+            fileName="Labour Report"
+          />
+        </div>
+      </div>
 
       <table style={{ width: "100%", borderCollapse: "collapse" }}>
         <thead>
           <tr>
             <th style={tableHead}>Name</th>
             <th style={tableHead}>Contact</th>
+            <th style={tableHead}>Site</th>
             <th style={tableHead}>Daily Wage</th>
+            <th style={tableHead}>Attendance</th>
+            <th style={tableHead}>Total Wage</th>
+            <th style={tableHead}>Pending</th>
             <th style={tableHead}>Action</th>
           </tr>
         </thead>
@@ -60,7 +114,11 @@ function LabourTable() {
               <tr key={labour.id}>
                 <td style={tableData}>{labour.labour_name}</td>
                 <td style={tableData}>{labour.contact_number}</td>
+                <td style={tableData}>{labour.site_name || "-"}</td>
                 <td style={tableData}>Rs. {labour.daily_wage}</td>
+                <td style={tableData}>{labour.attendance_count || 0}</td>
+                <td style={tableData}>Rs. {labour.total_wage || 0}</td>
+                <td style={tableData}>Rs. {labour.pending_amount || 0}</td>
                 <td style={tableData}>
                   <button type="button" onClick={() => handleDelete(labour.id)}>
                     Delete
@@ -77,7 +135,7 @@ function LabourTable() {
 function StatusRow({ text }) {
   return (
     <tr>
-      <td style={tableData} colSpan="4">
+      <td style={tableData} colSpan="8">
         {text}
       </td>
     </tr>

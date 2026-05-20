@@ -1,8 +1,26 @@
+import { useEffect, useState } from "react";
 import SiteForm from "../../components/sites/SiteForm";
 import SiteTable from "../../components/sites/SiteTable";
 import SiteCard from "../../components/sites/SiteCard";
+import { getSites } from "../../api/siteApi";
 
 function Sites() {
+  const [sites, setSites] = useState([]);
+
+  const loadSites = async () => {
+    const response = await getSites();
+    setSites(response.data.sites || []);
+  };
+
+  useEffect(() => {
+    loadSites();
+    window.addEventListener("sites:changed", loadSites);
+
+    return () => {
+      window.removeEventListener("sites:changed", loadSites);
+    };
+  }, []);
+
   return (
     <div>
       <h1
@@ -24,23 +42,14 @@ function Sites() {
           marginBottom: "25px",
         }}
       >
-        <SiteCard
-          siteName="Site A"
-          location="Mumbai"
-          totalExpense="2,50,000"
-        />
-
-        <SiteCard
-          siteName="Site B"
-          location="Pune"
-          totalExpense="1,80,000"
-        />
-
-        <SiteCard
-          siteName="Site C"
-          location="Nashik"
-          totalExpense="90,000"
-        />
+        {sites.map((site) => (
+          <SiteCard
+            key={site.id}
+            siteName={site.site_name}
+            location={site.location || "-"}
+            totalExpense={site.total_expense || 0}
+          />
+        ))}
       </div>
 
       <SiteForm />

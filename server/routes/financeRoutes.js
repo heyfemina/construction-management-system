@@ -3,6 +3,7 @@ import express from "express";
 import {
   getDashboardSummary,
   getFinanceData,
+  addReceivable,
   addExpense,
   addPayment,
 } from "../controllers/financeController.js";
@@ -21,6 +22,12 @@ router.get(
   "/summary",
   authMiddleware,
   getDashboardSummary
+);
+
+router.post(
+  "/receivables",
+  authMiddleware,
+  addReceivable
 );
 
 router.post(

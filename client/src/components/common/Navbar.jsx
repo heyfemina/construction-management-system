@@ -1,76 +1,77 @@
 import { useContext } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
 
-function Navbar() {
+const pageTitles = {
+  "/dashboard": "Dashboard",
+  "/materials": "Material Management",
+  "/vendors": "Vendor Management",
+  "/labour": "Labour Management",
+  "/finance": "Finance Management",
+  "/sites": "Site Management",
+  "/reports/materials": "Material Reports",
+  "/reports/vendors": "Vendor Reports",
+  "/reports/labours": "Labour Reports",
+  "/reports/financial": "Financial Reports",
+  "/reports/sites": "Site Reports",
+};
+
+function Navbar({ onMenuClick }) {
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogout = () => {
     logout();
     navigate("/login", { replace: true });
   };
 
-  return (
-    <div
-      style={{
-        width: "100%",
-        backgroundColor: "#ffffff",
-        padding: "15px 30px",
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-      }}
-    >
-      <h2
-        style={{
-          fontSize: "24px",
-          fontWeight: "700",
-        }}
-      >
-        Construction Management System
-      </h2>
+  const initial = (user?.name || user?.email || "U")
+    .charAt(0)
+    .toUpperCase();
+  const pageTitle = pageTitles[location.pathname] || "Workspace";
 
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "12px",
-        }}
-      >
-        <div
-          style={{
-            width: "40px",
-            height: "40px",
-            borderRadius: "50%",
-            backgroundColor: "#2563eb",
-            color: "#ffffff",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            fontWeight: "700",
-          }}
+  return (
+    <header className="topbar">
+      <div className="topbar-left">
+        <button
+          type="button"
+          className="mobile-menu-button"
+          onClick={onMenuClick}
+          aria-label="Open navigation"
         >
-          {(user?.name || user?.email || "U").charAt(0).toUpperCase()}
+          menu
+        </button>
+
+        <div className="topbar-title-block">
+          <div className="topbar-kicker">
+            <span className="topbar-status-dot" />
+            Construction Management System
+          </div>
+          <h2>{pageTitle}</h2>
+        </div>
+      </div>
+
+      <div className="topbar-actions">
+        <div className="topbar-chip">Admin Workspace</div>
+
+        <div className="topbar-user">
+          <div className="topbar-avatar">{initial}</div>
+          <div className="topbar-user-text">
+            <strong>{user?.name || "Admin"}</strong>
+            <span>{user?.email || "Signed in"}</span>
+          </div>
         </div>
 
         <button
           type="button"
           onClick={handleLogout}
-          style={{
-            padding: "10px 14px",
-            border: "1px solid #d1d5db",
-            borderRadius: "8px",
-            backgroundColor: "#ffffff",
-            cursor: "pointer",
-            fontWeight: "600",
-          }}
+          className="logout-button"
         >
           Logout
         </button>
       </div>
-    </div>
+    </header>
   );
 }
 

@@ -34,91 +34,48 @@ function Login() {
   };
 
   return (
-    <div>
-      <h1
-        style={{
-          textAlign: "center",
-          marginBottom: "25px",
-          fontSize: "32px",
-          fontWeight: "700",
-        }}
-      >
-        Login
-      </h1>
+    <div className="login-form-wrap">
+      <div className="login-heading">
+        <p>Welcome back</p>
+        <h1>Login to your dashboard</h1>
+        <span>Use your admin account to continue.</span>
+      </div>
 
-      <form onSubmit={handleLogin}>
-        {error && <p style={errorStyle}>{error}</p>}
+      <form onSubmit={handleLogin} className="login-form">
+        {error && <p className="form-error">{error}</p>}
 
-        <div style={{ marginBottom: "20px" }}>
-          <label>Email</label>
-
+        <label>
+          Email
           <input
             type="email"
             required
-            placeholder="Enter email"
+            placeholder="admin@example.com"
             value={email}
-            onChange={(e) =>
-              setEmail(e.target.value)
-            }
-            style={inputStyle}
+            onChange={(e) => setEmail(e.target.value)}
           />
-        </div>
+        </label>
 
-        <div style={{ marginBottom: "20px" }}>
-          <label>Password</label>
-
+        <label>
+          Password
           <input
             type="password"
             required
             placeholder="Enter password"
             value={password}
-            onChange={(e) =>
-              setPassword(e.target.value)
-            }
-            style={inputStyle}
+            onChange={(e) => setPassword(e.target.value)}
           />
-        </div>
+        </label>
 
-        <button type="submit" style={buttonStyle} disabled={loading}>
+        <button type="submit" disabled={loading}>
           {loading ? "Logging in..." : "Login"}
         </button>
       </form>
 
-      <p style={linkTextStyle}>
+      <p className="auth-link-text">
         New here? <Link to="/register">Create an account</Link>
       </p>
     </div>
   );
 }
-
-const inputStyle = {
-  width: "100%",
-  padding: "12px",
-  marginTop: "5px",
-  borderRadius: "8px",
-  border: "1px solid #d1d5db",
-};
-
-const buttonStyle = {
-  width: "100%",
-  padding: "12px",
-  backgroundColor: "#2563eb",
-  color: "#ffffff",
-  border: "none",
-  borderRadius: "8px",
-  fontWeight: "600",
-  cursor: "pointer",
-};
-
-const errorStyle = {
-  color: "#dc2626",
-  marginBottom: "15px",
-  fontWeight: "600",
-};
-
-const linkTextStyle = {
-  marginTop: "18px",
-  textAlign: "center",
-};
 
 export default Login;

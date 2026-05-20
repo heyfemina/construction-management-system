@@ -28,7 +28,11 @@ app.use("/api/reports", reportRoutes);
 
 const PORT = process.env.PORT || 5000;
 
-await ensureSchema();
+try {
+  await ensureSchema();
+} catch {
+  console.log("Schema check skipped until database connection is available");
+}
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

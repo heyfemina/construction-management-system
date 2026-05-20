@@ -1,11 +1,30 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { addMaterial } from "../../services/materialService";
+import { getSites } from "../../api/siteApi";
+import isConnectionError from "../../utils/isConnectionError";
 
 function MaterialForm() {
   const [materialName, setMaterialName] = useState("");
   const [unit, setUnit] = useState("");
+  const [siteId, setSiteId] = useState("");
+  const [sites, setSites] = useState([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const loadSites = () => {
+    getSites()
+      .then((response) => setSites(response.data.sites || []))
+      .catch(() => setSites([]));
+  };
+
+  useEffect(() => {
+    loadSites();
+    window.addEventListener("sites:changed", loadSites);
+
+    return () => {
+      window.removeEventListener("sites:changed", loadSites);
+    };
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -14,15 +33,21 @@ function MaterialForm() {
 
     try {
       await addMaterial({
-        site_id: null,
+        site_id: siteId || null,
         material_name: materialName,
         unit,
       });
 
       setMaterialName("");
       setUnit("");
+      setSiteId("");
       window.dispatchEvent(new Event("materials:changed"));
     } catch (err) {
+      if (isConnectionError(err)) {
+        setError("");
+        return;
+      }
+
       setError(err.response?.data?.message || "Could not save material");
     } finally {
       setLoading(false);
@@ -58,7 +83,10 @@ function MaterialForm() {
             type="text"
             required
             value={materialName}
-            onChange={(e) => setMaterialName(e.target.value)}
+            onChange={(e) => {
+              setMaterialName(e.target.value);
+              setError("");
+            }}
             placeholder="Enter material name"
             style={inputStyle}
           />
@@ -71,10 +99,30 @@ function MaterialForm() {
             type="text"
             required
             value={unit}
-            onChange={(e) => setUnit(e.target.value)}
+            onChange={(e) => {
+              setUnit(e.target.value);
+              setError("");
+            }}
             placeholder="Bag / Kg / Ton / Piece"
             style={inputStyle}
           />
+        </div>
+
+        <div style={{ marginBottom: "15px" }}>
+          <label>Site</label>
+
+          <select
+            value={siteId}
+            onChange={(e) => setSiteId(e.target.value)}
+            style={inputStyle}
+          >
+            <option value="">No site selected</option>
+            {sites.map((site) => (
+              <option key={site.id} value={site.id}>
+                {site.site_name}
+              </option>
+            ))}
+          </select>
         </div>
 
         <button type="submit" style={buttonStyle} disabled={loading}>

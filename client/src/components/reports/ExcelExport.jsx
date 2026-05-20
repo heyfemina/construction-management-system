@@ -1,6 +1,12 @@
-function ExcelExport() {
+import generateExcel from "../../utils/generateExcel";
+
+function ExcelExport({
+  data = [],
+  columns = [],
+  fileName = "Report",
+}) {
   const handleExport = () => {
-    alert("Excel Export Started");
+    generateExcel(data, fileName, columns);
   };
 
   return (

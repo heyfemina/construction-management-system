@@ -1,10 +1,17 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-function ReportFilter() {
-  const [reportType, setReportType] = useState("");
+function ReportFilter({ value = "" }) {
+  const [reportType, setReportType] = useState(value);
+  const navigate = useNavigate();
 
   const handleFilter = (e) => {
-    setReportType(e.target.value);
+    const nextType = e.target.value;
+    setReportType(nextType);
+
+    if (nextType) {
+      navigate(`/reports/${nextType}`);
+    }
   };
 
   return (
@@ -40,8 +47,9 @@ function ReportFilter() {
         <option value="">Select Report</option>
         <option value="materials">Material Reports</option>
         <option value="vendors">Vendor Reports</option>
-        <option value="labour">Labour Reports</option>
-        <option value="finance">Financial Reports</option>
+        <option value="labours">Labour Reports</option>
+        <option value="financial">Financial Reports</option>
+        <option value="sites">Site Reports</option>
       </select>
     </div>
   );

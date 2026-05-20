@@ -1,10 +1,40 @@
-import { useState } from "react";
-import { createAttendance } from "../../api/labourApi";
+import { useEffect, useState } from "react";
+import {
+  createAttendance,
+  getLabours,
+} from "../../api/labourApi";
+import { getSites } from "../../api/siteApi";
 
 function AttendanceForm() {
-  const [labourName, setLabourName] = useState("");
+  const [labourId, setLabourId] = useState("");
+  const [siteId, setSiteId] = useState("");
   const [date, setDate] = useState("");
+  const [labours, setLabours] = useState([]);
+  const [sites, setSites] = useState([]);
   const [saving, setSaving] = useState(false);
+
+  const loadOptions = () => {
+    Promise.all([getLabours(), getSites()])
+      .then(([laboursResponse, sitesResponse]) => {
+        setLabours(laboursResponse.data.labours || []);
+        setSites(sitesResponse.data.sites || []);
+      })
+      .catch(() => {
+        setLabours([]);
+        setSites([]);
+      });
+  };
+
+  useEffect(() => {
+    loadOptions();
+    window.addEventListener("labours:changed", loadOptions);
+    window.addEventListener("sites:changed", loadOptions);
+
+    return () => {
+      window.removeEventListener("labours:changed", loadOptions);
+      window.removeEventListener("sites:changed", loadOptions);
+    };
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -12,11 +42,14 @@ function AttendanceForm() {
 
     try {
       await createAttendance({
+        labour_id: labourId || null,
+        site_id: siteId || null,
         attendance_date: date,
-        status: labourName ? `Present - ${labourName}` : "Present",
+        status: "Present",
       });
 
-      setLabourName("");
+      setLabourId("");
+      setSiteId("");
       setDate("");
       window.dispatchEvent(new Event("labours:changed"));
     } finally {
@@ -45,15 +78,36 @@ function AttendanceForm() {
 
       <form onSubmit={handleSubmit}>
         <div style={{ marginBottom: "15px" }}>
-          <label>Labour Name</label>
-
-          <input
-            type="text"
-            value={labourName}
-            onChange={(e) => setLabourName(e.target.value)}
-            placeholder="Enter labour name"
+          <label>Labour</label>
+          <select
+            required
+            value={labourId}
+            onChange={(e) => setLabourId(e.target.value)}
             style={inputStyle}
-          />
+          >
+            <option value="">Select labour</option>
+            {labours.map((labour) => (
+              <option key={labour.id} value={labour.id}>
+                {labour.labour_name} - Rs. {labour.daily_wage}/day
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div style={{ marginBottom: "15px" }}>
+          <label>Site</label>
+          <select
+            value={siteId}
+            onChange={(e) => setSiteId(e.target.value)}
+            style={inputStyle}
+          >
+            <option value="">Select site</option>
+            {sites.map((site) => (
+              <option key={site.id} value={site.id}>
+                {site.site_name}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div style={{ marginBottom: "15px" }}>

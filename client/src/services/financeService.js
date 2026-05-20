@@ -15,6 +15,15 @@ export const addExpense = async (data) => {
   return response.data;
 };
 
+export const addReceivable = async (data) => {
+  const response = await financeApi.post(
+    "/receivables",
+    data
+  );
+
+  return response.data;
+};
+
 export const addPayment = async (data) => {
   const response = await financeApi.post(
     "/payments",

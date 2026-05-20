@@ -8,9 +8,32 @@ export const getSites = async (
     const result =
       await pool.query(
         `
-      SELECT * FROM sites
-      WHERE user_id = $1
-      ORDER BY id DESC
+      SELECT
+        s.*,
+        COALESCE(e.total_expense, 0)::numeric AS total_expense,
+        COALESCE(m.material_cost, 0)::numeric AS material_cost,
+        COALESCE(l.labour_count, 0)::int AS labour_count
+      FROM sites s
+      LEFT JOIN (
+        SELECT site_id, SUM(amount) AS total_expense
+        FROM expenses
+        WHERE user_id = $1
+        GROUP BY site_id
+      ) e ON e.site_id = s.id
+      LEFT JOIN (
+        SELECT site_id, SUM(total_cost) AS material_cost
+        FROM material_purchases
+        WHERE user_id = $1
+        GROUP BY site_id
+      ) m ON m.site_id = s.id
+      LEFT JOIN (
+        SELECT site_id, COUNT(*) AS labour_count
+        FROM labours
+        WHERE user_id = $1
+        GROUP BY site_id
+      ) l ON l.site_id = s.id
+      WHERE s.user_id = $1
+      ORDER BY s.id DESC
       `,
         [req.user.id]
       );

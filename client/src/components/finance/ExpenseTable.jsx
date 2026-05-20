@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getFinanceData } from "../../services/financeService";
+import isConnectionError from "../../utils/isConnectionError";
 
 function ExpenseTable() {
   const [expenses, setExpenses] = useState([]);
@@ -15,6 +16,13 @@ function ExpenseTable() {
       setPayments(data.payments || []);
       setError("");
     } catch (err) {
+      if (isConnectionError(err)) {
+        setExpenses([]);
+        setPayments([]);
+        setError("");
+        return;
+      }
+
       setError(err.response?.data?.message || "Could not load finance data");
     } finally {
       setLoading(false);
@@ -75,7 +83,7 @@ function SimpleTable({ headers, rows, loading, error, emptyText }) {
       </thead>
       <tbody>
         {loading && <StatusRow colSpan={headers.length} text="Loading..." />}
-        {!loading && error && <StatusRow colSpan={headers.length} text={error} />}
+        {!loading && error && <StatusRow colSpan={headers.length} text="No records found" />}
         {!loading && !error && rows.length === 0 && (
           <StatusRow colSpan={headers.length} text={emptyText} />
         )}

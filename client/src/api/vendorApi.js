@@ -4,6 +4,10 @@ export const getVendors = async () => {
   return await API.get("/vendors");
 };
 
+export const getVendorLedger = async (id) => {
+  return await API.get(`/vendors/ledger/${id}`);
+};
+
 export const getSingleVendor = async (id) => {
   return await API.get(`/vendors/${id}`);
 };

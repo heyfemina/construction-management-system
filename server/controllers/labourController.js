@@ -6,9 +6,38 @@ export const getLabours =
       const result =
         await pool.query(
           `
-        SELECT * FROM labours
-        WHERE user_id = $1
-        ORDER BY id DESC
+        SELECT
+          l.*,
+          s.site_name,
+          COALESCE(a.attendance_count, 0)::int AS attendance_count,
+          COALESCE(w.total_wage, 0)::numeric AS total_wage,
+          COALESCE(pay.paid_amount, 0)::numeric AS paid_amount,
+          (
+            COALESCE(w.total_wage, 0) -
+            COALESCE(pay.paid_amount, 0)
+          )::numeric AS pending_amount
+        FROM labours l
+        LEFT JOIN sites s ON s.id = l.site_id
+        LEFT JOIN (
+          SELECT labour_id, COUNT(*) AS attendance_count
+          FROM attendance
+          WHERE user_id = $1
+          GROUP BY labour_id
+        ) a ON a.labour_id = l.id
+        LEFT JOIN (
+          SELECT labour_id, SUM(total_amount) AS total_wage
+          FROM wages
+          WHERE user_id = $1
+          GROUP BY labour_id
+        ) w ON w.labour_id = l.id
+        LEFT JOIN (
+          SELECT labour_id, SUM(paid_amount) AS paid_amount
+          FROM labour_payments
+          WHERE user_id = $1
+          GROUP BY labour_id
+        ) pay ON pay.labour_id = l.id
+        WHERE l.user_id = $1
+        ORDER BY l.id DESC
         `,
           [req.user.id]
         );
@@ -93,6 +122,52 @@ export const deleteLabour =
       res.status(200).json({
         success: true,
         message: "Labour deleted successfully",
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: error.message,
+      });
+    }
+  };
+
+export const getLabourActivity =
+  async (req, res) => {
+    try {
+      const attendance =
+        await pool.query(
+          `
+          SELECT
+            a.*,
+            l.labour_name,
+            s.site_name
+          FROM attendance a
+          LEFT JOIN labours l ON l.id = a.labour_id
+          LEFT JOIN sites s ON s.id = a.site_id
+          WHERE a.user_id = $1
+          ORDER BY a.attendance_date DESC, a.id DESC
+          `,
+          [req.user.id]
+        );
+
+      const wages =
+        await pool.query(
+          `
+          SELECT
+            w.*,
+            l.labour_name
+          FROM wages w
+          LEFT JOIN labours l ON l.id = w.labour_id
+          WHERE w.user_id = $1
+          ORDER BY w.created_at DESC, w.id DESC
+          `,
+          [req.user.id]
+        );
+
+      res.status(200).json({
+        success: true,
+        attendance: attendance.rows,
+        wages: wages.rows,
       });
     } catch (error) {
       res.status(500).json({

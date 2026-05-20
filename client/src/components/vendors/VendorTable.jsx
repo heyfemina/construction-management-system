@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
 import { deleteVendor, getVendors } from "../../services/vendorService";
+import ExcelExport from "../reports/ExcelExport";
+import PDFExport from "../reports/PDFExport";
+import isConnectionError from "../../utils/isConnectionError";
 
 function VendorTable() {
   const [vendors, setVendors] = useState([]);
@@ -13,6 +16,12 @@ function VendorTable() {
       setVendors(data.vendors || []);
       setError("");
     } catch (err) {
+      if (isConnectionError(err)) {
+        setVendors([]);
+        setError("");
+        return;
+      }
+
       setError(err.response?.data?.message || "Could not load vendors");
     } finally {
       setLoading(false);
@@ -33,6 +42,15 @@ function VendorTable() {
     loadVendors();
   };
 
+  const exportColumns = [
+    { key: "vendor_name", label: "Vendor Name" },
+    { key: "contact_number", label: "Contact" },
+    { key: "email", label: "Email" },
+    { key: "total_purchase", label: "Purchase" },
+    { key: "paid_amount", label: "Paid" },
+    { key: "pending_amount", label: "Pending" },
+  ];
+
   return (
     <div
       style={{
@@ -43,15 +61,46 @@ function VendorTable() {
         overflowX: "auto",
       }}
     >
-      <h2
+      <div
         style={{
-          fontSize: "24px",
-          fontWeight: "700",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          gap: "15px",
+          flexWrap: "wrap",
           marginBottom: "20px",
         }}
       >
-        Vendor List
-      </h2>
+        <h2
+          style={{
+            fontSize: "24px",
+            fontWeight: "700",
+            margin: 0,
+          }}
+        >
+          Vendor List
+        </h2>
+
+        <div
+          style={{
+            display: "flex",
+            gap: "10px",
+            flexWrap: "wrap",
+          }}
+        >
+          <PDFExport
+            data={vendors}
+            columns={exportColumns}
+            fileName="Vendor Report"
+          />
+
+          <ExcelExport
+            data={vendors}
+            columns={exportColumns}
+            fileName="Vendor Report"
+          />
+        </div>
+      </div>
 
       <table
         style={{
@@ -64,6 +113,9 @@ function VendorTable() {
             <th style={tableHead}>Vendor Name</th>
             <th style={tableHead}>Contact</th>
             <th style={tableHead}>Email</th>
+            <th style={tableHead}>Purchase</th>
+            <th style={tableHead}>Paid</th>
+            <th style={tableHead}>Pending</th>
             <th style={tableHead}>Action</th>
           </tr>
         </thead>
@@ -71,19 +123,19 @@ function VendorTable() {
         <tbody>
           {loading && (
             <tr>
-              <td style={tableData} colSpan="4">Loading...</td>
+              <td style={tableData} colSpan="7">Loading...</td>
             </tr>
           )}
 
           {!loading && error && (
             <tr>
-              <td style={tableData} colSpan="4">{error}</td>
+              <td style={tableData} colSpan="7">{error}</td>
             </tr>
           )}
 
           {!loading && !error && vendors.length === 0 && (
             <tr>
-              <td style={tableData} colSpan="4">No vendors yet</td>
+              <td style={tableData} colSpan="7">No vendors yet</td>
             </tr>
           )}
 
@@ -92,6 +144,9 @@ function VendorTable() {
               <td style={tableData}>{vendor.vendor_name}</td>
               <td style={tableData}>{vendor.contact_number}</td>
               <td style={tableData}>{vendor.email}</td>
+              <td style={tableData}>Rs. {vendor.total_purchase || 0}</td>
+              <td style={tableData}>Rs. {vendor.paid_amount || 0}</td>
+              <td style={tableData}>Rs. {vendor.pending_amount || 0}</td>
               <td style={tableData}>
                 <button type="button" onClick={() => handleDelete(vendor.id)}>
                   Delete

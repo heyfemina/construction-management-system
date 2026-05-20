@@ -2,6 +2,7 @@ import express from "express";
 
 import {
   getLabours,
+  getLabourActivity,
   addLabour,
   deleteLabour,
   addAttendance,
@@ -16,6 +17,12 @@ router.get(
   "/",
   authMiddleware,
   getLabours
+);
+
+router.get(
+  "/activity",
+  authMiddleware,
+  getLabourActivity
 );
 
 router.post(

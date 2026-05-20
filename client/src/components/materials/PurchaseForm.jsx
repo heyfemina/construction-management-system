@@ -1,22 +1,71 @@
-import { useState } from "react";
-import { createMaterialPurchase } from "../../api/materialApi";
+import { useEffect, useState } from "react";
+import {
+  createMaterialPurchase,
+  getMaterials,
+} from "../../api/materialApi";
+import { getSites } from "../../api/siteApi";
+import { getVendors } from "../../api/vendorApi";
 
 function PurchaseForm() {
+  const [materialId, setMaterialId] = useState("");
+  const [vendorId, setVendorId] = useState("");
+  const [siteId, setSiteId] = useState("");
   const [quantity, setQuantity] = useState("");
   const [unitCost, setUnitCost] = useState("");
   const [transportCost, setTransportCost] = useState("");
+  const [materials, setMaterials] = useState([]);
+  const [vendors, setVendors] = useState([]);
+  const [sites, setSites] = useState([]);
+  const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
 
   const total =
     Number(quantity) * Number(unitCost) +
     Number(transportCost || 0);
 
+  const loadOptions = () => {
+    Promise.all([getMaterials(), getVendors(), getSites()])
+      .then(([materialsResponse, vendorsResponse, sitesResponse]) => {
+        setMaterials(materialsResponse.data.materials || []);
+        setVendors(vendorsResponse.data.vendors || []);
+        setSites(sitesResponse.data.sites || []);
+      })
+      .catch(() => {
+        setMaterials([]);
+        setVendors([]);
+        setSites([]);
+      });
+  };
+
+  useEffect(() => {
+    loadOptions();
+    window.addEventListener("materials:changed", loadOptions);
+    window.addEventListener("vendors:changed", loadOptions);
+    window.addEventListener("sites:changed", loadOptions);
+
+    return () => {
+      window.removeEventListener("materials:changed", loadOptions);
+      window.removeEventListener("vendors:changed", loadOptions);
+      window.removeEventListener("sites:changed", loadOptions);
+    };
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+
+    if (!materialId || !vendorId || Number(quantity) <= 0 || Number(unitCost) <= 0) {
+      setError("Select material/vendor and enter quantity plus unit cost.");
+      return;
+    }
+
     setSaving(true);
 
     try {
       await createMaterialPurchase({
+        material_id: materialId || null,
+        vendor_id: vendorId || null,
+        site_id: siteId || null,
         quantity,
         unit_cost: unitCost,
         transport_cost: transportCost || 0,
@@ -24,10 +73,16 @@ function PurchaseForm() {
         purchase_date: new Date().toISOString().slice(0, 10),
       });
 
+      setMaterialId("");
+      setVendorId("");
+      setSiteId("");
       setQuantity("");
       setUnitCost("");
       setTransportCost("");
       window.dispatchEvent(new Event("materials:changed"));
+      window.dispatchEvent(new Event("vendors:changed"));
+    } catch (err) {
+      setError(err.response?.data?.message || "Could not save purchase");
     } finally {
       setSaving(false);
     }
@@ -53,41 +108,60 @@ function PurchaseForm() {
       </h2>
 
       <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: "15px" }}>
-          <label>Quantity</label>
+        {error && <p style={errorStyle}>{error}</p>}
 
-          <input
-            type="number"
-            value={quantity}
-            onChange={(e) => setQuantity(e.target.value)}
-            placeholder="Enter quantity"
-            style={inputStyle}
-          />
-        </div>
+        <SelectField
+          label="Material"
+          required
+          value={materialId}
+          onChange={setMaterialId}
+          options={materials.map((material) => ({
+            value: material.id,
+            label: material.material_name,
+          }))}
+        />
 
-        <div style={{ marginBottom: "15px" }}>
-          <label>Unit Cost</label>
+        <SelectField
+          label="Vendor"
+          required
+          value={vendorId}
+          onChange={setVendorId}
+          options={vendors.map((vendor) => ({
+            value: vendor.id,
+            label: vendor.vendor_name,
+          }))}
+        />
 
-          <input
-            type="number"
-            value={unitCost}
-            onChange={(e) => setUnitCost(e.target.value)}
-            placeholder="Enter unit cost"
-            style={inputStyle}
-          />
-        </div>
+        <SelectField
+          label="Site"
+          value={siteId}
+          onChange={setSiteId}
+          options={sites.map((site) => ({
+            value: site.id,
+            label: site.site_name,
+          }))}
+        />
 
-        <div style={{ marginBottom: "15px" }}>
-          <label>Transport Cost</label>
+        <InputField
+          label="Quantity"
+          value={quantity}
+          onChange={setQuantity}
+          placeholder="Enter quantity"
+        />
 
-          <input
-            type="number"
-            value={transportCost}
-            onChange={(e) => setTransportCost(e.target.value)}
-            placeholder="Enter transport cost"
-            style={inputStyle}
-          />
-        </div>
+        <InputField
+          label="Unit Cost"
+          value={unitCost}
+          onChange={setUnitCost}
+          placeholder="Enter unit cost"
+        />
+
+        <InputField
+          label="Transport Cost"
+          value={transportCost}
+          onChange={setTransportCost}
+          placeholder="Enter transport cost"
+        />
 
         <div
           style={{
@@ -96,13 +170,58 @@ function PurchaseForm() {
             fontWeight: "700",
           }}
         >
-          Total Cost: ₹ {total}
+          Total Cost: Rs. {total}
         </div>
 
         <button type="submit" style={buttonStyle} disabled={saving}>
           {saving ? "Saving..." : "Save Purchase"}
         </button>
       </form>
+    </div>
+  );
+}
+
+function SelectField({
+  label,
+  value,
+  onChange,
+  options,
+  required = false,
+}) {
+  return (
+    <div style={{ marginBottom: "15px" }}>
+      <label>{label}</label>
+      <select
+        required={required}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        style={inputStyle}
+      >
+        <option value="">Select {label.toLowerCase()}</option>
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
+function InputField({ label, value, onChange, placeholder }) {
+  return (
+    <div style={{ marginBottom: "15px" }}>
+      <label>{label}</label>
+      <input
+        type="number"
+        min="0"
+        step="0.01"
+        required={label !== "Transport Cost"}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        style={inputStyle}
+      />
     </div>
   );
 }
@@ -123,6 +242,12 @@ const buttonStyle = {
   border: "none",
   borderRadius: "8px",
   cursor: "pointer",
+  fontWeight: "600",
+};
+
+const errorStyle = {
+  color: "#dc2626",
+  marginBottom: "12px",
   fontWeight: "600",
 };
 

@@ -1,4 +1,45 @@
+import { useEffect, useMemo, useState } from "react";
+import {
+  getLabourActivity,
+  getLabours,
+} from "../../api/labourApi";
+
 function LabourReport() {
+  const [labours, setLabours] = useState([]);
+  const [activity, setActivity] = useState({
+    attendance: [],
+    wages: [],
+  });
+
+  const loadReport = async () => {
+    const [laboursResponse, activityResponse] =
+      await Promise.all([getLabours(), getLabourActivity()]);
+
+    setLabours(laboursResponse.data.labours || []);
+    setActivity({
+      attendance: activityResponse.data.attendance || [],
+      wages: activityResponse.data.wages || [],
+    });
+  };
+
+  useEffect(() => {
+    loadReport();
+    window.addEventListener("labours:changed", loadReport);
+
+    return () => {
+      window.removeEventListener("labours:changed", loadReport);
+    };
+  }, []);
+
+  const totalCost = useMemo(
+    () =>
+      activity.wages.reduce(
+        (total, wage) => total + Number(wage.total_amount || 0),
+        0
+      ),
+    [activity.wages]
+  );
+
   return (
     <div
       style={{
@@ -25,21 +66,22 @@ function LabourReport() {
           gap: "20px",
         }}
       >
-        <div style={cardStyle}>
-          <h3>Total Workers</h3>
-          <h1>45</h1>
-        </div>
-
-        <div style={cardStyle}>
-          <h3>Total Attendance</h3>
-          <h1>120</h1>
-        </div>
-
-        <div style={cardStyle}>
-          <h3>Total Labour Cost</h3>
-          <h1>₹ 80,000</h1>
-        </div>
+        <ReportCard title="Total Workers" value={labours.length} />
+        <ReportCard
+          title="Attendance Records"
+          value={activity.attendance.length}
+        />
+        <ReportCard title="Total Labour Cost" value={`Rs. ${totalCost}`} />
       </div>
+    </div>
+  );
+}
+
+function ReportCard({ title, value }) {
+  return (
+    <div style={cardStyle}>
+      <h3>{title}</h3>
+      <h1>{value}</h1>
     </div>
   );
 }

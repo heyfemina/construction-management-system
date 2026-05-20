@@ -4,6 +4,10 @@ export const getMaterials = async () => {
   return await API.get("/materials");
 };
 
+export const getMaterialActivity = async () => {
+  return await API.get("/materials/activity");
+};
+
 export const getSingleMaterial = async (id) => {
   return await API.get(`/materials/${id}`);
 };

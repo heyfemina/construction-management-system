@@ -8,6 +8,10 @@ export const createExpense = async (data) => {
   return await API.post("/finance/expenses", data);
 };
 
+export const createReceivable = async (data) => {
+  return await API.post("/finance/receivables", data);
+};
+
 export const getExpenses = async () => {
   return await API.get("/finance");
 };

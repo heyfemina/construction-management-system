@@ -1,6 +1,12 @@
-function PDFExport() {
+import generatePDF from "../../utils/generatePDF";
+
+function PDFExport({
+  data = [],
+  columns = [],
+  fileName = "Report",
+}) {
   const handleExport = () => {
-    alert("PDF Export Started");
+    generatePDF(fileName, data, columns);
   };
 
   return (

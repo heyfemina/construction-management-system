@@ -1,6 +1,7 @@
 import VendorForm from "../../components/vendors/VendorForm";
 import VendorTable from "../../components/vendors/VendorTable";
 import VendorLedger from "../../components/vendors/VendorLedger";
+import VendorPaymentForm from "../../components/vendors/VendorPaymentForm";
 import VendorReport from "../../components/vendors/VendorReport";
 
 function Vendors() {
@@ -17,6 +18,8 @@ function Vendors() {
       </h1>
 
       <VendorForm />
+
+      <VendorPaymentForm />
 
       <div
         style={{

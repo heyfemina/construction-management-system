@@ -1,3 +1,4 @@
+import ExpenseForm from "../../components/finance/ExpenseForm";
 import ExpenseTable from "../../components/finance/ExpenseTable";
 
 function Expenses() {
@@ -12,6 +13,8 @@ function Expenses() {
       >
         Expenses
       </h1>
+
+      <ExpenseForm />
 
       <ExpenseTable />
     </div>

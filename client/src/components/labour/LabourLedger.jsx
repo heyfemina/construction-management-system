@@ -1,4 +1,43 @@
+import { useEffect, useMemo, useState } from "react";
+import { getLabours } from "../../api/labourApi";
+
 function LabourLedger() {
+  const [labours, setLabours] = useState([]);
+
+  const loadLabours = async () => {
+    const response = await getLabours();
+    setLabours(response.data.labours || []);
+  };
+
+  useEffect(() => {
+    loadLabours();
+    window.addEventListener("labours:changed", loadLabours);
+
+    return () => {
+      window.removeEventListener("labours:changed", loadLabours);
+    };
+  }, []);
+
+  const summary = useMemo(
+    () =>
+      labours.reduce(
+        (total, labour) => ({
+          totalWage:
+            total.totalWage + Number(labour.total_wage || 0),
+          paidAmount:
+            total.paidAmount + Number(labour.paid_amount || 0),
+          pendingAmount:
+            total.pendingAmount + Number(labour.pending_amount || 0),
+        }),
+        {
+          totalWage: 0,
+          paidAmount: 0,
+          pendingAmount: 0,
+        }
+      ),
+    [labours]
+  );
+
   return (
     <div
       style={{
@@ -25,21 +64,22 @@ function LabourLedger() {
           gap: "20px",
         }}
       >
-        <div style={cardStyle}>
-          <h3>Total Wage</h3>
-          <h1>₹ 40,000</h1>
-        </div>
-
-        <div style={cardStyle}>
-          <h3>Paid Amount</h3>
-          <h1>₹ 30,000</h1>
-        </div>
-
-        <div style={cardStyle}>
-          <h3>Pending Amount</h3>
-          <h1>₹ 10,000</h1>
-        </div>
+        <LedgerCard title="Total Wage" value={`Rs. ${summary.totalWage}`} />
+        <LedgerCard title="Paid Amount" value={`Rs. ${summary.paidAmount}`} />
+        <LedgerCard
+          title="Pending Amount"
+          value={`Rs. ${summary.pendingAmount}`}
+        />
       </div>
+    </div>
+  );
+}
+
+function LedgerCard({ title, value }) {
+  return (
+    <div style={cardStyle}>
+      <h3>{title}</h3>
+      <h1>{value}</h1>
     </div>
   );
 }

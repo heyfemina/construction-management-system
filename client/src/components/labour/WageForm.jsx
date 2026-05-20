@@ -1,12 +1,29 @@
-import { useState } from "react";
-import { createWage } from "../../api/labourApi";
+import { useEffect, useState } from "react";
+import { createWage, getLabours } from "../../api/labourApi";
 
 function WageForm() {
+  const [labourId, setLabourId] = useState("");
   const [days, setDays] = useState("");
   const [rate, setRate] = useState("");
+  const [labours, setLabours] = useState([]);
   const [saving, setSaving] = useState(false);
 
-  const total = days * rate || 0;
+  const total = Number(days || 0) * Number(rate || 0);
+
+  const loadLabours = () => {
+    getLabours()
+      .then((response) => setLabours(response.data.labours || []))
+      .catch(() => setLabours([]));
+  };
+
+  useEffect(() => {
+    loadLabours();
+    window.addEventListener("labours:changed", loadLabours);
+
+    return () => {
+      window.removeEventListener("labours:changed", loadLabours);
+    };
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -14,12 +31,14 @@ function WageForm() {
 
     try {
       await createWage({
+        labour_id: labourId || null,
         total_days: days,
         rate_per_day: rate,
         total_amount: total,
         wage_month: new Date().toISOString().slice(0, 7),
       });
 
+      setLabourId("");
       setDays("");
       setRate("");
       window.dispatchEvent(new Event("labours:changed"));
@@ -48,6 +67,23 @@ function WageForm() {
       </h2>
 
       <form onSubmit={handleSubmit}>
+        <div style={{ marginBottom: "15px" }}>
+          <label>Labour</label>
+          <select
+            required
+            value={labourId}
+            onChange={(e) => setLabourId(e.target.value)}
+            style={inputStyle}
+          >
+            <option value="">Select labour</option>
+            {labours.map((labour) => (
+              <option key={labour.id} value={labour.id}>
+                {labour.labour_name} - Rs. {labour.daily_wage}/day
+              </option>
+            ))}
+          </select>
+        </div>
+
         <div style={{ marginBottom: "15px" }}>
           <label>Total Days</label>
 
@@ -79,7 +115,7 @@ function WageForm() {
             fontWeight: "700",
           }}
         >
-          Total Wage: ₹ {total}
+          Total Wage: Rs. {total}
         </div>
 
         <button type="submit" style={buttonStyle} disabled={saving}>

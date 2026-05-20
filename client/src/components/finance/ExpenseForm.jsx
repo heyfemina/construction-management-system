@@ -1,13 +1,12 @@
 import { useEffect, useState } from "react";
-import { addLabour } from "../../services/labourService";
+import { addExpense } from "../../services/financeService";
 import { getSites } from "../../api/siteApi";
 
-function LabourForm() {
-  const [labourName, setLabourName] = useState("");
-  const [contact, setContact] = useState("");
-  const [dailyWage, setDailyWage] = useState("");
-  const [address, setAddress] = useState("");
+function ExpenseForm() {
+  const [expenseType, setExpenseType] = useState("");
   const [siteId, setSiteId] = useState("");
+  const [amount, setAmount] = useState("");
+  const [description, setDescription] = useState("");
   const [sites, setSites] = useState([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -24,22 +23,21 @@ function LabourForm() {
     setLoading(true);
 
     try {
-      await addLabour({
+      await addExpense({
         site_id: siteId || null,
-        labour_name: labourName,
-        contact_number: contact,
-        address,
-        daily_wage: dailyWage,
+        expense_type: expenseType,
+        amount,
+        expense_date: new Date().toISOString().slice(0, 10),
+        description,
       });
 
-      setLabourName("");
-      setContact("");
-      setDailyWage("");
-      setAddress("");
+      setExpenseType("");
       setSiteId("");
-      window.dispatchEvent(new Event("labours:changed"));
+      setAmount("");
+      setDescription("");
+      window.dispatchEvent(new Event("finance:changed"));
     } catch (err) {
-      setError(err.response?.data?.message || "Could not save labour");
+      setError(err.response?.data?.message || "Could not save expense");
     } finally {
       setLoading(false);
     }
@@ -47,42 +45,19 @@ function LabourForm() {
 
   return (
     <div style={cardStyle}>
-      <h2 style={headingStyle}>Add Labour</h2>
+      <h2 style={headingStyle}>Add Expense</h2>
 
       <form onSubmit={handleSubmit}>
         {error && <p style={errorStyle}>{error}</p>}
 
         <div style={{ marginBottom: "15px" }}>
-          <label>Labour Name</label>
+          <label>Expense Type</label>
           <input
             type="text"
             required
-            value={labourName}
-            onChange={(e) => setLabourName(e.target.value)}
-            placeholder="Enter labour name"
-            style={inputStyle}
-          />
-        </div>
-
-        <div style={{ marginBottom: "15px" }}>
-          <label>Contact Number</label>
-          <input
-            type="text"
-            value={contact}
-            onChange={(e) => setContact(e.target.value)}
-            placeholder="Enter contact number"
-            style={inputStyle}
-          />
-        </div>
-
-        <div style={{ marginBottom: "15px" }}>
-          <label>Daily Wage</label>
-          <input
-            type="number"
-            required
-            value={dailyWage}
-            onChange={(e) => setDailyWage(e.target.value)}
-            placeholder="Enter daily wage"
+            value={expenseType}
+            onChange={(e) => setExpenseType(e.target.value)}
+            placeholder="Material / Labour / Transport"
             style={inputStyle}
           />
         </div>
@@ -104,18 +79,30 @@ function LabourForm() {
         </div>
 
         <div style={{ marginBottom: "15px" }}>
-          <label>Address</label>
+          <label>Amount</label>
+          <input
+            type="number"
+            required
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            placeholder="Enter amount"
+            style={inputStyle}
+          />
+        </div>
+
+        <div style={{ marginBottom: "15px" }}>
+          <label>Description</label>
           <input
             type="text"
-            value={address}
-            onChange={(e) => setAddress(e.target.value)}
-            placeholder="Enter address"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Enter details"
             style={inputStyle}
           />
         </div>
 
         <button type="submit" style={buttonStyle} disabled={loading}>
-          {loading ? "Saving..." : "Save Labour"}
+          {loading ? "Saving..." : "Save Expense"}
         </button>
       </form>
     </div>
@@ -145,9 +132,9 @@ const inputStyle = {
 
 const buttonStyle = {
   width: "100%",
-  padding: "12px",
   backgroundColor: "#2563eb",
   color: "#ffffff",
+  padding: "12px",
   border: "none",
   borderRadius: "8px",
   cursor: "pointer",
@@ -160,4 +147,4 @@ const errorStyle = {
   fontWeight: "600",
 };
 
-export default LabourForm;
+export default ExpenseForm;

@@ -2,6 +2,7 @@ import express from "express";
 
 import {
   getVendors,
+  getVendorLedger,
   addVendor,
   deleteVendor,
   addVendorPayment,
@@ -15,6 +16,12 @@ router.get(
   "/",
   authMiddleware,
   getVendors
+);
+
+router.get(
+  "/ledger/:id",
+  authMiddleware,
+  getVendorLedger
 );
 
 router.post(

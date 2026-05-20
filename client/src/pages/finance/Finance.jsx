@@ -1,4 +1,5 @@
 import ClientForm from "../../components/finance/ClientForm";
+import ExpenseForm from "../../components/finance/ExpenseForm";
 import ReceivableTable from "../../components/finance/ReceivableTable";
 import PaymentForm from "../../components/finance/PaymentForm";
 import ExpenseTable from "../../components/finance/ExpenseTable";
@@ -25,6 +26,8 @@ function Finance() {
         }}
       >
         <ClientForm />
+
+        <ExpenseForm />
 
         <PaymentForm />
       </div>

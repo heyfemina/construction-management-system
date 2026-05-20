@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { deleteSite, getSites } from "../../services/siteService";
+import isConnectionError from "../../utils/isConnectionError";
 
 function SiteTable() {
   const [sites, setSites] = useState([]);
@@ -13,6 +14,12 @@ function SiteTable() {
       setSites(data.sites || []);
       setError("");
     } catch (err) {
+      if (isConnectionError(err)) {
+        setSites([]);
+        setError("");
+        return;
+      }
+
       setError(err.response?.data?.message || "Could not load sites");
     } finally {
       setLoading(false);

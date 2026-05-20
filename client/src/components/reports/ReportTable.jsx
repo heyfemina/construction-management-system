@@ -1,22 +1,10 @@
-function ReportTable() {
-  const reports = [
-    {
-      report: "Material Report",
-      site: "Site A",
-      date: "2025-07-01",
-    },
-    {
-      report: "Vendor Report",
-      site: "Site B",
-      date: "2025-07-02",
-    },
-    {
-      report: "Labour Report",
-      site: "Site C",
-      date: "2025-07-03",
-    },
-  ];
-
+function ReportTable({
+  title = "Reports List",
+  data = [],
+  columns = [],
+  loading = false,
+  error = "",
+}) {
   return (
     <div
       style={{
@@ -33,7 +21,7 @@ function ReportTable() {
           marginBottom: "20px",
         }}
       >
-        Reports List
+        {title}
       </h2>
 
       <table
@@ -44,18 +32,38 @@ function ReportTable() {
       >
         <thead>
           <tr>
-            <th style={tableHead}>Report Name</th>
-            <th style={tableHead}>Site</th>
-            <th style={tableHead}>Date</th>
+            {columns.map((column) => (
+              <th key={column.key} style={tableHead}>
+                {column.label}
+              </th>
+            ))}
           </tr>
         </thead>
 
         <tbody>
-          {reports.map((item, index) => (
-            <tr key={index}>
-              <td style={tableData}>{item.report}</td>
-              <td style={tableData}>{item.site}</td>
-              <td style={tableData}>{item.date}</td>
+          {loading && (
+            <tr>
+              <td style={tableData} colSpan={columns.length}>
+                Loading reports...
+              </td>
+            </tr>
+          )}
+
+          {!loading && data.length === 0 && (
+            <tr>
+              <td style={tableData} colSpan={columns.length}>
+                No records found
+              </td>
+            </tr>
+          )}
+
+          {!loading && data.map((item, index) => (
+            <tr key={item.id || index}>
+              {columns.map((column) => (
+                <td key={column.key} style={tableData}>
+                  {item[column.key] ?? "-"}
+                </td>
+              ))}
             </tr>
           ))}
         </tbody>

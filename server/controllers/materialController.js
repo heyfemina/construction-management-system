@@ -8,9 +8,39 @@ export const getMaterials = async (
     const result =
       await pool.query(
         `
-        SELECT * FROM materials
-        WHERE user_id = $1
-        ORDER BY id DESC
+        SELECT
+          m.*,
+          s.site_name,
+          COALESCE(p.total_received, 0)::numeric AS total_received,
+          COALESCE(u.total_used, 0)::numeric AS total_used,
+          (
+            COALESCE(p.total_received, 0) -
+            COALESCE(u.total_used, 0)
+          )::numeric AS remaining_stock,
+          COALESCE(p.total_cost, 0)::numeric AS total_cost,
+          COALESCE(p.transport_cost, 0)::numeric AS transport_cost
+        FROM materials m
+        LEFT JOIN sites s ON s.id = m.site_id
+        LEFT JOIN (
+          SELECT
+            material_id,
+            SUM(quantity) AS total_received,
+            SUM(total_cost) AS total_cost,
+            SUM(transport_cost) AS transport_cost
+          FROM material_purchases
+          WHERE user_id = $1
+          GROUP BY material_id
+        ) p ON p.material_id = m.id
+        LEFT JOIN (
+          SELECT
+            material_id,
+            SUM(used_quantity) AS total_used
+          FROM material_usage
+          WHERE user_id = $1
+          GROUP BY material_id
+        ) u ON u.material_id = m.id
+        WHERE m.user_id = $1
+        ORDER BY m.id DESC
         `,
         [req.user.id]
       );
@@ -140,6 +170,56 @@ export const addMaterialPurchase = async (req, res) => {
     });
   }
 };
+
+export const getMaterialActivity =
+  async (req, res) => {
+    try {
+      const purchases =
+        await pool.query(
+          `
+          SELECT
+            p.*,
+            m.material_name,
+            v.vendor_name,
+            s.site_name
+          FROM material_purchases p
+          LEFT JOIN materials m ON m.id = p.material_id
+          LEFT JOIN vendors v ON v.id = p.vendor_id
+          LEFT JOIN sites s ON s.id = p.site_id
+          WHERE p.user_id = $1
+          ORDER BY p.purchase_date DESC, p.id DESC
+          `,
+          [req.user.id]
+        );
+
+      const usage =
+        await pool.query(
+          `
+          SELECT
+            u.*,
+            m.material_name,
+            s.site_name
+          FROM material_usage u
+          LEFT JOIN materials m ON m.id = u.material_id
+          LEFT JOIN sites s ON s.id = u.site_id
+          WHERE u.user_id = $1
+          ORDER BY u.usage_date DESC, u.id DESC
+          `,
+          [req.user.id]
+        );
+
+      res.status(200).json({
+        success: true,
+        purchases: purchases.rows,
+        usage: usage.rows,
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: error.message,
+      });
+    }
+  };
 
 export const addMaterialUsage = async (req, res) => {
   try {

@@ -1,4 +1,42 @@
+import { useEffect, useMemo, useState } from "react";
+import { getMaterials } from "../../api/materialApi";
+
 function MaterialReport() {
+  const [materials, setMaterials] = useState([]);
+
+  const loadMaterials = async () => {
+    const response = await getMaterials();
+    setMaterials(response.data.materials || []);
+  };
+
+  useEffect(() => {
+    loadMaterials();
+    window.addEventListener("materials:changed", loadMaterials);
+
+    return () => {
+      window.removeEventListener("materials:changed", loadMaterials);
+    };
+  }, []);
+
+  const summary = useMemo(
+    () =>
+      materials.reduce(
+        (total, material) => ({
+          totalMaterials: total.totalMaterials + 1,
+          totalStock:
+            total.totalStock + Number(material.remaining_stock || 0),
+          totalCost:
+            total.totalCost + Number(material.total_cost || 0),
+        }),
+        {
+          totalMaterials: 0,
+          totalStock: 0,
+          totalCost: 0,
+        }
+      ),
+    [materials]
+  );
+
   return (
     <div
       style={{
@@ -25,21 +63,22 @@ function MaterialReport() {
           gap: "20px",
         }}
       >
-        <div style={cardStyle}>
-          <h3>Total Materials</h3>
-          <h1>12</h1>
-        </div>
-
-        <div style={cardStyle}>
-          <h3>Total Stock</h3>
-          <h1>850</h1>
-        </div>
-
-        <div style={cardStyle}>
-          <h3>Total Material Cost</h3>
-          <h1>₹ 1,20,000</h1>
-        </div>
+        <ReportCard title="Total Materials" value={summary.totalMaterials} />
+        <ReportCard title="Remaining Stock" value={summary.totalStock} />
+        <ReportCard
+          title="Total Material Cost"
+          value={`Rs. ${summary.totalCost}`}
+        />
       </div>
+    </div>
+  );
+}
+
+function ReportCard({ title, value }) {
+  return (
+    <div style={cardStyle}>
+      <h3>{title}</h3>
+      <h1>{value}</h1>
     </div>
   );
 }

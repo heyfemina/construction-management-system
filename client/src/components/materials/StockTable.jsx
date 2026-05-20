@@ -1,18 +1,39 @@
+import { useEffect, useState } from "react";
+import { getMaterials } from "../../api/materialApi";
+import isConnectionError from "../../utils/isConnectionError";
+
 function StockTable() {
-  const stocks = [
-    {
-      material: "Cement",
-      received: 500,
-      used: 300,
-      remaining: 200,
-    },
-    {
-      material: "Steel",
-      received: 100,
-      used: 40,
-      remaining: 60,
-    },
-  ];
+  const [stocks, setStocks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const loadStocks = async () => {
+    try {
+      setLoading(true);
+      const response = await getMaterials();
+      setStocks(response.data.materials || []);
+      setError("");
+    } catch (err) {
+      if (isConnectionError(err)) {
+        setStocks([]);
+        setError("");
+        return;
+      }
+
+      setError(err.response?.data?.message || "Could not load stock");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadStocks();
+    window.addEventListener("materials:changed", loadStocks);
+
+    return () => {
+      window.removeEventListener("materials:changed", loadStocks);
+    };
+  }, []);
 
   return (
     <div
@@ -21,6 +42,7 @@ function StockTable() {
         padding: "20px",
         borderRadius: "12px",
         marginTop: "20px",
+        overflowX: "auto",
       }}
     >
       <h2
@@ -42,24 +64,43 @@ function StockTable() {
         <thead>
           <tr>
             <th style={tableHead}>Material</th>
+            <th style={tableHead}>Site</th>
             <th style={tableHead}>Received</th>
             <th style={tableHead}>Used</th>
             <th style={tableHead}>Remaining</th>
+            <th style={tableHead}>Cost</th>
           </tr>
         </thead>
 
         <tbody>
-          {stocks.map((stock, index) => (
-            <tr key={index}>
-              <td style={tableData}>{stock.material}</td>
-              <td style={tableData}>{stock.received}</td>
-              <td style={tableData}>{stock.used}</td>
-              <td style={tableData}>{stock.remaining}</td>
+          {loading && <StatusRow text="Loading..." />}
+          {!loading && error && <StatusRow text={error} />}
+          {!loading && !error && stocks.length === 0 && (
+            <StatusRow text="No stock records yet" />
+          )}
+          {!loading && !error && stocks.map((stock) => (
+            <tr key={stock.id}>
+              <td style={tableData}>{stock.material_name}</td>
+              <td style={tableData}>{stock.site_name || "-"}</td>
+              <td style={tableData}>{stock.total_received}</td>
+              <td style={tableData}>{stock.total_used}</td>
+              <td style={tableData}>{stock.remaining_stock}</td>
+              <td style={tableData}>Rs. {stock.total_cost}</td>
             </tr>
           ))}
         </tbody>
       </table>
     </div>
+  );
+}
+
+function StatusRow({ text }) {
+  return (
+    <tr>
+      <td style={tableData} colSpan="6">
+        {text}
+      </td>
+    </tr>
   );
 }
 

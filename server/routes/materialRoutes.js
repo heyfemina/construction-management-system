@@ -2,6 +2,7 @@ import express from "express";
 
 import {
   getMaterials,
+  getMaterialActivity,
   addMaterial,
   deleteMaterial,
   addMaterialPurchase,
@@ -16,6 +17,12 @@ router.get(
   "/",
   authMiddleware,
   getMaterials
+);
+
+router.get(
+  "/activity",
+  authMiddleware,
+  getMaterialActivity
 );
 
 router.post(

@@ -6,9 +6,29 @@ export const getVendors =
       const result =
         await pool.query(
           `
-        SELECT * FROM vendors
-        WHERE user_id = $1
-        ORDER BY id DESC
+        SELECT
+          v.*,
+          COALESCE(p.total_purchase, 0)::numeric AS total_purchase,
+          COALESCE(pay.paid_amount, 0)::numeric AS paid_amount,
+          (
+            COALESCE(p.total_purchase, 0) -
+            COALESCE(pay.paid_amount, 0)
+          )::numeric AS pending_amount
+        FROM vendors v
+        LEFT JOIN (
+          SELECT vendor_id, SUM(total_cost) AS total_purchase
+          FROM material_purchases
+          WHERE user_id = $1
+          GROUP BY vendor_id
+        ) p ON p.vendor_id = v.id
+        LEFT JOIN (
+          SELECT vendor_id, SUM(paid_amount) AS paid_amount
+          FROM vendor_payments
+          WHERE user_id = $1
+          GROUP BY vendor_id
+        ) pay ON pay.vendor_id = v.id
+        WHERE v.user_id = $1
+        ORDER BY v.id DESC
         `,
           [req.user.id]
         );
@@ -84,6 +104,84 @@ export const deleteVendor =
       res.status(200).json({
         success: true,
         message: "Vendor deleted successfully",
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: error.message,
+      });
+    }
+  };
+
+export const getVendorLedger =
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+
+      const vendor =
+        await pool.query(
+          `
+          SELECT
+            v.*,
+            COALESCE(p.total_purchase, 0)::numeric AS total_purchase,
+            COALESCE(pay.paid_amount, 0)::numeric AS paid_amount,
+            (
+              COALESCE(p.total_purchase, 0) -
+              COALESCE(pay.paid_amount, 0)
+            )::numeric AS pending_amount
+          FROM vendors v
+          LEFT JOIN (
+            SELECT vendor_id, SUM(total_cost) AS total_purchase
+            FROM material_purchases
+            WHERE user_id = $1
+            GROUP BY vendor_id
+          ) p ON p.vendor_id = v.id
+          LEFT JOIN (
+            SELECT vendor_id, SUM(paid_amount) AS paid_amount
+            FROM vendor_payments
+            WHERE user_id = $1
+            GROUP BY vendor_id
+          ) pay ON pay.vendor_id = v.id
+          WHERE v.id = $2 AND v.user_id = $1
+          `,
+          [req.user.id, id]
+        );
+
+      const transactions =
+        await pool.query(
+          `
+          SELECT
+            p.id,
+            p.purchase_date AS transaction_date,
+            'Purchase' AS type,
+            m.material_name AS description,
+            p.total_cost AS debit,
+            0::numeric AS credit
+          FROM material_purchases p
+          LEFT JOIN materials m ON m.id = p.material_id
+          WHERE p.vendor_id = $2 AND p.user_id = $1
+
+          UNION ALL
+
+          SELECT
+            vp.id,
+            vp.payment_date AS transaction_date,
+            'Payment' AS type,
+            vp.payment_method AS description,
+            0::numeric AS debit,
+            vp.paid_amount AS credit
+          FROM vendor_payments vp
+          WHERE vp.vendor_id = $2 AND vp.user_id = $1
+
+          ORDER BY transaction_date DESC NULLS LAST, id DESC
+          `,
+          [req.user.id, id]
+        );
+
+      res.status(200).json({
+        success: true,
+        vendor: vendor.rows[0],
+        transactions: transactions.rows,
       });
     } catch (error) {
       res.status(500).json({

@@ -1,18 +1,11 @@
-function Header({ title }) {
+function Header({ title, subtitle }) {
   return (
-    <div
-      style={{
-        marginBottom: "20px",
-      }}
-    >
-      <h1
-        style={{
-          fontSize: "30px",
-          fontWeight: "700",
-        }}
-      >
-        {title}
-      </h1>
+    <div className="page-header">
+      <div>
+        <p className="page-header-label">Control Panel</p>
+        <h1>{title}</h1>
+        {subtitle && <p>{subtitle}</p>}
+      </div>
     </div>
   );
 }

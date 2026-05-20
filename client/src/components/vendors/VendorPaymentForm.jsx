@@ -1,10 +1,30 @@
-import { useState } from "react";
-import { createVendorPayment } from "../../api/vendorApi";
+import { useEffect, useState } from "react";
+import {
+  createVendorPayment,
+  getVendors,
+} from "../../api/vendorApi";
 
 function VendorPaymentForm() {
+  const [vendorId, setVendorId] = useState("");
   const [amount, setAmount] = useState("");
   const [method, setMethod] = useState("");
+  const [vendors, setVendors] = useState([]);
   const [saving, setSaving] = useState(false);
+
+  const loadVendors = () => {
+    getVendors()
+      .then((response) => setVendors(response.data.vendors || []))
+      .catch(() => setVendors([]));
+  };
+
+  useEffect(() => {
+    loadVendors();
+    window.addEventListener("vendors:changed", loadVendors);
+
+    return () => {
+      window.removeEventListener("vendors:changed", loadVendors);
+    };
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -12,6 +32,7 @@ function VendorPaymentForm() {
 
     try {
       await createVendorPayment({
+        vendor_id: vendorId || null,
         total_amount: amount,
         paid_amount: amount,
         pending_amount: 0,
@@ -19,6 +40,7 @@ function VendorPaymentForm() {
         payment_method: method,
       });
 
+      setVendorId("");
       setAmount("");
       setMethod("");
       window.dispatchEvent(new Event("vendors:changed"));
@@ -47,6 +69,23 @@ function VendorPaymentForm() {
       </h2>
 
       <form onSubmit={handleSubmit}>
+        <div style={{ marginBottom: "15px" }}>
+          <label>Vendor</label>
+          <select
+            required
+            value={vendorId}
+            onChange={(e) => setVendorId(e.target.value)}
+            style={inputStyle}
+          >
+            <option value="">Select vendor</option>
+            {vendors.map((vendor) => (
+              <option key={vendor.id} value={vendor.id}>
+                {vendor.vendor_name} - Pending Rs. {vendor.pending_amount || 0}
+              </option>
+            ))}
+          </select>
+        </div>
+
         <div style={{ marginBottom: "15px" }}>
           <label>Payment Amount</label>
 

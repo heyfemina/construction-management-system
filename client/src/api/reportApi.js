@@ -23,3 +23,7 @@ export const exportPDF = async () => {
 export const exportExcel = async () => {
   return await API.get("/reports/export/excel");
 };
+
+export default {
+  get: (path = "") => API.get(`/reports${path}`),
+};

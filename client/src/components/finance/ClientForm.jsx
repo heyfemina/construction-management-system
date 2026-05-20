@@ -1,12 +1,25 @@
-import { useState } from "react";
-import { addExpense } from "../../services/financeService";
+import { useEffect, useState } from "react";
+import { addReceivable } from "../../services/financeService";
+import { getSites } from "../../api/siteApi";
 
 function ClientForm() {
-  const [expenseType, setExpenseType] = useState("");
-  const [amount, setAmount] = useState("");
-  const [description, setDescription] = useState("");
+  const [clientName, setClientName] = useState("");
+  const [siteId, setSiteId] = useState("");
+  const [totalAmount, setTotalAmount] = useState("");
+  const [receivedAmount, setReceivedAmount] = useState("");
+  const [dueDate, setDueDate] = useState("");
+  const [sites, setSites] = useState([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const pendingAmount =
+    Number(totalAmount || 0) - Number(receivedAmount || 0);
+
+  useEffect(() => {
+    getSites()
+      .then((response) => setSites(response.data.sites || []))
+      .catch(() => setSites([]));
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -14,20 +27,23 @@ function ClientForm() {
     setLoading(true);
 
     try {
-      await addExpense({
-        site_id: null,
-        expense_type: expenseType,
-        amount,
-        expense_date: new Date().toISOString().slice(0, 10),
-        description,
+      await addReceivable({
+        client_name: clientName,
+        site_id: siteId || null,
+        total_amount: totalAmount,
+        received_amount: receivedAmount || 0,
+        pending_amount: pendingAmount,
+        due_date: dueDate || null,
       });
 
-      setExpenseType("");
-      setAmount("");
-      setDescription("");
+      setClientName("");
+      setSiteId("");
+      setTotalAmount("");
+      setReceivedAmount("");
+      setDueDate("");
       window.dispatchEvent(new Event("finance:changed"));
     } catch (err) {
-      setError(err.response?.data?.message || "Could not save expense");
+      setError(err.response?.data?.message || "Could not save receivable");
     } finally {
       setLoading(false);
     }
@@ -35,48 +51,78 @@ function ClientForm() {
 
   return (
     <div style={cardStyle}>
-      <h2 style={headingStyle}>Add Expense</h2>
+      <h2 style={headingStyle}>Add Receivable</h2>
 
       <form onSubmit={handleSubmit}>
         {error && <p style={errorStyle}>{error}</p>}
 
         <div style={{ marginBottom: "15px" }}>
-          <label>Expense Type</label>
+          <label>Client / Party Name</label>
           <input
             type="text"
             required
-            value={expenseType}
-            onChange={(e) => setExpenseType(e.target.value)}
-            placeholder="Material / Labour / Transport"
+            value={clientName}
+            onChange={(e) => setClientName(e.target.value)}
+            placeholder="Enter client or party name"
             style={inputStyle}
           />
         </div>
 
         <div style={{ marginBottom: "15px" }}>
-          <label>Amount</label>
+          <label>Site</label>
+          <select
+            value={siteId}
+            onChange={(e) => setSiteId(e.target.value)}
+            style={inputStyle}
+          >
+            <option value="">No site selected</option>
+            {sites.map((site) => (
+              <option key={site.id} value={site.id}>
+                {site.site_name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div style={{ marginBottom: "15px" }}>
+          <label>Total Amount</label>
           <input
             type="number"
             required
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            placeholder="Enter amount"
+            value={totalAmount}
+            onChange={(e) => setTotalAmount(e.target.value)}
+            placeholder="Enter total amount"
             style={inputStyle}
           />
         </div>
 
         <div style={{ marginBottom: "15px" }}>
-          <label>Description</label>
+          <label>Received Amount</label>
           <input
-            type="text"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Enter details"
+            type="number"
+            value={receivedAmount}
+            onChange={(e) => setReceivedAmount(e.target.value)}
+            placeholder="Enter received amount"
             style={inputStyle}
           />
         </div>
 
+        <div style={{ marginBottom: "15px" }}>
+          <label>Due Date</label>
+          <input
+            type="date"
+            value={dueDate}
+            onChange={(e) => setDueDate(e.target.value)}
+            style={inputStyle}
+          />
+        </div>
+
+        <p style={{ fontWeight: "700" }}>
+          Pending Amount: Rs. {pendingAmount}
+        </p>
+
         <button type="submit" style={buttonStyle} disabled={loading}>
-          {loading ? "Saving..." : "Save Expense"}
+          {loading ? "Saving..." : "Save Receivable"}
         </button>
       </form>
     </div>

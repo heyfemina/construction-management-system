@@ -1,34 +1,30 @@
+import { useState } from "react";
 import Navbar from "../components/common/Navbar";
 import Sidebar from "../components/common/Sidebar";
 
 function DashboardLayout({ children }) {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
   return (
-    <div
-      style={{
-        display: "flex",
-        minHeight: "100vh",
-        backgroundColor: "#f3f4f6",
-      }}
-    >
-      <Sidebar />
+    <div className="app-shell">
+      <Sidebar
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+      />
 
-      <div
-        style={{
-          flex: 1,
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
-        <Navbar />
+      {sidebarOpen && (
+        <button
+          type="button"
+          aria-label="Close navigation"
+          className="sidebar-backdrop"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
 
-        <main
-          style={{
-            padding: "20px",
-            flex: 1,
-          }}
-        >
-          {children}
-        </main>
+      <div className="app-content">
+        <Navbar onMenuClick={() => setSidebarOpen(true)} />
+
+        <main className="app-main">{children}</main>
       </div>
     </div>
   );

@@ -27,16 +27,14 @@ const defaultSummary = {
 function Dashboard() {
   const { user } = useContext(AuthContext);
   const [summary, setSummary] = useState(defaultSummary);
-  const [error, setError] = useState("");
 
   useEffect(() => {
     const loadSummary = async () => {
       try {
         const response = await getDashboardSummary();
         setSummary(response.data.summary || defaultSummary);
-        setError("");
-      } catch (err) {
-        setError(err.response?.data?.message || "Could not load dashboard");
+      } catch {
+        setSummary(defaultSummary);
       }
     };
 
@@ -115,8 +113,6 @@ function Dashboard() {
           </div>
         </div>
       </section>
-
-      {error && <div style={errorStyle}>{error}</div>}
 
       <section style={kpiGridStyle}>
         {kpis.map((item) => (
@@ -526,15 +522,6 @@ const chartGridStyle = {
 
 const widePanelStyle = {
   display: "grid",
-};
-
-const errorStyle = {
-  padding: "14px 16px",
-  color: "#991b1b",
-  backgroundColor: "#fef2f2",
-  border: "1px solid #fecaca",
-  borderRadius: "8px",
-  fontWeight: "700",
 };
 
 export default Dashboard;

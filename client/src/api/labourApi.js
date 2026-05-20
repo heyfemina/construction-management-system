@@ -4,6 +4,10 @@ export const getLabours = async () => {
   return await API.get("/labours");
 };
 
+export const getLabourActivity = async () => {
+  return await API.get("/labours/activity");
+};
+
 export const getSingleLabour = async (id) => {
   return await API.get(`/labours/${id}`);
 };
