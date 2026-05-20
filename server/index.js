@@ -18,6 +18,11 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+app.get("/", (req, res) => {
+  res.send("Construction Management Backend Running");
+});
+
+
 app.use("/api/auth", authRoutes);
 app.use("/api/materials", materialRoutes);
 app.use("/api/vendors", vendorRoutes);
@@ -26,10 +31,6 @@ app.use("/api/labours", labourRoutes);
 app.use("/api/finance", financeRoutes);
 app.use("/api/reports", reportRoutes);
 
-
-app.get("/", (req, res) => {
-  res.send("Construction Management Backend Running");
-});
 
 const PORT = process.env.PORT || 5000;
 
