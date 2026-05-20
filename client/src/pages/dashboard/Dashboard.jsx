@@ -286,6 +286,7 @@ const eyebrowStyle = {
 
 const titleStyle = {
   margin: 0,
+  color: "#ffffff",
   fontSize: "34px",
   lineHeight: 1.15,
   fontWeight: "800",

@@ -1,25 +1,37 @@
 import { Link, useLocation } from "react-router-dom";
+import {
+  BarChart3,
+  Briefcase,
+  Building2,
+  DollarSign,
+  FileText,
+  Home,
+  MapPin,
+  Package,
+  Users,
+  X,
+} from "lucide-react";
 
 const menuGroups = [
   {
     title: "Workspace",
     items: [
-      { name: "Dashboard", path: "/dashboard" },
-      { name: "Materials", path: "/materials" },
-      { name: "Vendors", path: "/vendors" },
-      { name: "Labour", path: "/labour" },
-      { name: "Finance", path: "/finance" },
-      { name: "Sites", path: "/sites" },
+      { name: "Dashboard", path: "/dashboard", icon: Home },
+      { name: "Materials", path: "/materials", icon: Package },
+      { name: "Vendors", path: "/vendors", icon: Building2 },
+      { name: "Labour", path: "/labour", icon: Users },
+      { name: "Finance", path: "/finance", icon: DollarSign },
+      { name: "Sites", path: "/sites", icon: MapPin },
     ],
   },
   {
     title: "Reports",
     items: [
-      { name: "Material Report", path: "/reports/materials" },
-      { name: "Vendor Report", path: "/reports/vendors" },
-      { name: "Labour Report", path: "/reports/labours" },
-      { name: "Financial Report", path: "/reports/financial" },
-      { name: "Site Report", path: "/reports/sites" },
+      { name: "Material Report", path: "/reports/materials", icon: FileText },
+      { name: "Vendor Report", path: "/reports/vendors", icon: FileText },
+      { name: "Labour Report", path: "/reports/labours", icon: FileText },
+      { name: "Financial Report", path: "/reports/financial", icon: BarChart3 },
+      { name: "Site Report", path: "/reports/sites", icon: Briefcase },
     ],
   },
 ];
@@ -30,10 +42,10 @@ function Sidebar({ isOpen = false, onClose }) {
   return (
     <aside className={`sidebar ${isOpen ? "sidebar-open" : ""}`}>
       <div className="sidebar-brand">
-        <div className="sidebar-logo">CM</div>
-        <div>
+        <div className="sidebar-logo">CP</div>
+        <div className="sidebar-brand-copy">
           <h1>ConstructPro</h1>
-          <p>Management System</p>
+          <p>Project Management</p>
         </div>
 
         <button
@@ -42,7 +54,7 @@ function Sidebar({ isOpen = false, onClose }) {
           onClick={onClose}
           aria-label="Close sidebar"
         >
-          x
+          <X size={18} strokeWidth={2.4} />
         </button>
       </div>
 
@@ -51,7 +63,10 @@ function Sidebar({ isOpen = false, onClose }) {
           <div className="sidebar-group" key={group.title}>
             <p className="sidebar-group-title">{group.title}</p>
             {group.items.map((menu) => {
-              const active = location.pathname === menu.path;
+              const active =
+                location.pathname === menu.path ||
+                location.pathname.startsWith(`${menu.path}/`);
+              const Icon = menu.icon;
 
               return (
                 <Link
@@ -60,6 +75,7 @@ function Sidebar({ isOpen = false, onClose }) {
                   className={`sidebar-link ${active ? "active" : ""}`}
                   onClick={onClose}
                 >
+                  <Icon size={18} strokeWidth={2.2} />
                   <span>{menu.name}</span>
                 </Link>
               );
