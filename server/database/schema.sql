@@ -196,6 +196,7 @@ CREATE TABLE labour_payments (
     pending_amount NUMERIC(12,2) DEFAULT 0,
 
     payment_date DATE,
+    payment_method VARCHAR(50),
 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

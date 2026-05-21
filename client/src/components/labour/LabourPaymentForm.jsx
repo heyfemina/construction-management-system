@@ -84,10 +84,9 @@ function LabourPaymentForm() {
           <label>Labour Email</label>
           <input
             type="email"
-            required
             value={recipientEmail}
             onChange={(e) => setRecipientEmail(e.target.value)}
-            placeholder="Enter labour email"
+            placeholder="Optional email receipt"
             style={inputStyle}
           />
         </div>
@@ -97,6 +96,8 @@ function LabourPaymentForm() {
           <input
             type="number"
             required
+            min="0"
+            step="0.01"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             placeholder="Enter payment amount"

@@ -1,6 +1,7 @@
 import { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
+import AuthFormShell from "../../components/auth/AuthFormShell";
 import { loginUser } from "../../services/authService";
 
 function Login() {
@@ -34,16 +35,18 @@ function Login() {
   };
 
   return (
-    <div className="login-form-wrap">
-      <div className="login-heading">
-        <p>Welcome back</p>
-        <h1>Login to your dashboard</h1>
-        <span>Use your admin account to continue.</span>
-      </div>
-
+    <AuthFormShell
+      eyebrow="Welcome back"
+      title="Admin Login"
+      subtitle="Sign in to manage sites, stock, labour, vendors, and cash flow."
+      error={error}
+      footer={
+        <>
+          New here? <Link to="/register">Create an admin account</Link>
+        </>
+      }
+    >
       <form onSubmit={handleLogin} className="login-form">
-        {error && <p className="form-error">{error}</p>}
-
         <label>
           Email
           <input
@@ -67,14 +70,10 @@ function Login() {
         </label>
 
         <button type="submit" disabled={loading}>
-          {loading ? "Logging in..." : "Login"}
+          {loading ? "Logging in..." : "Login as Admin"}
         </button>
       </form>
-
-      <p className="auth-link-text">
-        New here? <Link to="/register">Create an account</Link>
-      </p>
-    </div>
+    </AuthFormShell>
   );
 }
 

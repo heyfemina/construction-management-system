@@ -43,6 +43,14 @@ function VendorTable() {
     loadVendors();
   };
 
+  const handleEdit = (vendor) => {
+    window.dispatchEvent(
+      new CustomEvent("vendors:edit", {
+        detail: vendor,
+      })
+    );
+  };
+
   const exportColumns = [
     { key: "vendor_name", label: "Vendor Name" },
     { key: "contact_number", label: "Contact" },
@@ -152,6 +160,13 @@ function VendorTable() {
                 <Link to={`/vendors/details/${vendor.id}`} style={linkStyle}>
                   View
                 </Link>
+                <button
+                  type="button"
+                  style={actionButtonStyle}
+                  onClick={() => handleEdit(vendor)}
+                >
+                  Edit
+                </button>
                 <button type="button" onClick={() => handleDelete(vendor.id)}>
                   Delete
                 </button>
@@ -181,6 +196,10 @@ const linkStyle = {
   color: "#2563eb",
   fontWeight: "600",
   textDecoration: "none",
+};
+
+const actionButtonStyle = {
+  marginRight: "10px",
 };
 
 export default VendorTable;

@@ -248,6 +248,13 @@ export const getVendorLedger =
           [req.user.id, id]
         );
 
+      if (!vendor.rows[0]) {
+        return res.status(404).json({
+          success: false,
+          message: "Vendor not found",
+        });
+      }
+
       const transactions =
         await pool.query(
           `
@@ -255,11 +262,24 @@ export const getVendorLedger =
             p.id,
             p.purchase_date AS transaction_date,
             'Purchase' AS type,
-            m.material_name AS description,
+            CONCAT_WS(
+              ' - ',
+              m.material_name,
+              s.site_name,
+              CONCAT(p.quantity, ' ', COALESCE(m.unit, 'unit'), ' @ ', p.unit_cost),
+              NULLIF(p.notes, '')
+            ) AS description,
+            m.material_name,
+            s.site_name,
+            p.quantity,
+            p.unit_cost,
+            p.transport_cost,
+            p.total_cost,
             p.total_cost AS debit,
             0::numeric AS credit
           FROM material_purchases p
           LEFT JOIN materials m ON m.id = p.material_id
+          LEFT JOIN sites s ON s.id = p.site_id
           WHERE p.vendor_id = $2 AND p.user_id = $1
 
           UNION ALL
@@ -269,6 +289,12 @@ export const getVendorLedger =
             vp.payment_date AS transaction_date,
             'Payment' AS type,
             vp.payment_method AS description,
+            NULL AS material_name,
+            NULL AS site_name,
+            NULL::numeric AS quantity,
+            NULL::numeric AS unit_cost,
+            NULL::numeric AS transport_cost,
+            vp.total_amount AS total_cost,
             0::numeric AS debit,
             vp.paid_amount AS credit
           FROM vendor_payments vp
@@ -304,13 +330,6 @@ export const addVendorPayment = async (req, res) => {
       recipient_email,
     } = req.body;
 
-    if (!recipient_email) {
-      return res.status(400).json({
-        success: false,
-        message: "Recipient email is required",
-      });
-    }
-
     const vendor = vendor_id
       ? await pool.query(
           `
@@ -332,8 +351,10 @@ export const addVendorPayment = async (req, res) => {
       [
         vendor_id || null,
         total_amount,
-        paid_amount || total_amount,
-        pending_amount || 0,
+        Number(paid_amount || 0),
+        pending_amount === undefined || pending_amount === ""
+          ? Number(total_amount || 0) - Number(paid_amount || 0)
+          : Number(pending_amount),
         payment_date || null,
         payment_method || "",
         req.user.id,
@@ -346,23 +367,25 @@ export const addVendorPayment = async (req, res) => {
       reason: "Email notification was not attempted",
     };
 
-    try {
-      email = await sendPaymentConfirmationEmail({
-        to: recipient_email,
-        recipientName: vendor.rows[0]?.vendor_name,
-        recipientType: "Vendor",
-        amount: result.rows[0].paid_amount,
-        totalAmount: result.rows[0].total_amount,
-        pendingAmount: result.rows[0].pending_amount,
-        paymentDate: result.rows[0].payment_date,
-        paymentMethod: result.rows[0].payment_method,
-        reference: `Vendor Payment #${result.rows[0].id}`,
-      });
-    } catch (emailError) {
-      email = {
-        sent: false,
-        error: emailError.message,
-      };
+    if (recipient_email) {
+      try {
+        email = await sendPaymentConfirmationEmail({
+          to: recipient_email,
+          recipientName: vendor.rows[0]?.vendor_name,
+          recipientType: "Vendor",
+          amount: result.rows[0].paid_amount,
+          totalAmount: result.rows[0].total_amount,
+          pendingAmount: result.rows[0].pending_amount,
+          paymentDate: result.rows[0].payment_date,
+          paymentMethod: result.rows[0].payment_method,
+          reference: `Vendor Payment #${result.rows[0].id}`,
+        });
+      } catch (emailError) {
+        email = {
+          sent: false,
+          error: emailError.message,
+        };
+      }
     }
 
     res.status(201).json({

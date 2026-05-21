@@ -3,6 +3,7 @@ import express from "express";
 import {
   getDashboardSummary,
   getFinanceData,
+  getPartyLedger,
   addReceivable,
   addExpense,
   addPayment,
@@ -22,6 +23,12 @@ router.get(
   "/summary",
   authMiddleware,
   getDashboardSummary
+);
+
+router.get(
+  "/ledger/:clientId",
+  authMiddleware,
+  getPartyLedger
 );
 
 router.post(

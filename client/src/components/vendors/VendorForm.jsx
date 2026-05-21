@@ -1,7 +1,8 @@
-import { useState } from "react";
-import { addVendor } from "../../services/vendorService";
+import { useEffect, useState } from "react";
+import { addVendor, updateVendor } from "../../services/vendorService";
 
 function VendorForm() {
+  const [editingId, setEditingId] = useState("");
   const [vendorName, setVendorName] = useState("");
   const [contact, setContact] = useState("");
   const [email, setEmail] = useState("");
@@ -9,23 +10,54 @@ function VendorForm() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    const handleEdit = (event) => {
+      const vendor = event.detail;
+
+      setEditingId(vendor.id);
+      setVendorName(vendor.vendor_name || "");
+      setContact(vendor.contact_number || "");
+      setEmail(vendor.email || "");
+      setAddress(vendor.address || "");
+      setError("");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+
+    window.addEventListener("vendors:edit", handleEdit);
+
+    return () => {
+      window.removeEventListener("vendors:edit", handleEdit);
+    };
+  }, []);
+
+  const resetForm = () => {
+    setEditingId("");
+    setVendorName("");
+    setContact("");
+    setEmail("");
+    setAddress("");
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setLoading(true);
 
     try {
-      await addVendor({
+      const payload = {
         vendor_name: vendorName,
         contact_number: contact,
         email,
         address,
-      });
+      };
 
-      setVendorName("");
-      setContact("");
-      setEmail("");
-      setAddress("");
+      if (editingId) {
+        await updateVendor(editingId, payload);
+      } else {
+        await addVendor(payload);
+      }
+
+      resetForm();
       window.dispatchEvent(new Event("vendors:changed"));
     } catch (err) {
       setError(err.response?.data?.message || "Could not save vendor");
@@ -50,7 +82,7 @@ function VendorForm() {
           marginBottom: "20px",
         }}
       >
-        Add Vendor
+        {editingId ? "Edit Vendor" : "Add Vendor"}
       </h2>
 
       <form onSubmit={handleSubmit}>
@@ -105,9 +137,22 @@ function VendorForm() {
           />
         </div>
 
-        <button type="submit" style={buttonStyle} disabled={loading}>
-          {loading ? "Saving..." : "Save Vendor"}
-        </button>
+        <div style={buttonRowStyle}>
+          <button type="submit" style={buttonStyle} disabled={loading}>
+            {loading ? "Saving..." : editingId ? "Update Vendor" : "Save Vendor"}
+          </button>
+
+          {editingId && (
+            <button
+              type="button"
+              style={secondaryButtonStyle}
+              onClick={resetForm}
+              disabled={loading}
+            >
+              Cancel
+            </button>
+          )}
+        </div>
       </form>
     </div>
   );
@@ -122,7 +167,6 @@ const inputStyle = {
 };
 
 const buttonStyle = {
-  width: "100%",
   padding: "12px",
   backgroundColor: "#2563eb",
   color: "#ffffff",
@@ -130,6 +174,17 @@ const buttonStyle = {
   borderRadius: "8px",
   cursor: "pointer",
   fontWeight: "600",
+};
+
+const secondaryButtonStyle = {
+  ...buttonStyle,
+  backgroundColor: "#6b7280",
+};
+
+const buttonRowStyle = {
+  display: "flex",
+  gap: "10px",
+  flexWrap: "wrap",
 };
 
 const errorStyle = {

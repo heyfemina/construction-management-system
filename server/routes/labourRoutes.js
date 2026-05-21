@@ -3,6 +3,7 @@ import express from "express";
 import {
   getLabours,
   getLabourActivity,
+  getLabourLedger,
   getSingleLabour,
   addLabour,
   updateLabour,
@@ -26,6 +27,12 @@ router.get(
   "/activity",
   authMiddleware,
   getLabourActivity
+);
+
+router.get(
+  "/ledger/:id",
+  authMiddleware,
+  getLabourLedger
 );
 
 router.get(

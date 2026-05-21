@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { getVendorLedger, getVendors } from "../../api/vendorApi";
+import ExcelExport from "../reports/ExcelExport";
 import PDFExport from "../reports/PDFExport";
+import ReportTable from "../reports/ReportTable";
+import generateVendorReportPDF from "../../utils/generateVendorReportPDF";
 
 function VendorLedger() {
   const [vendors, setVendors] = useState([]);
@@ -38,6 +41,11 @@ function VendorLedger() {
           : "-",
         type: item.type,
         description: item.description || "-",
+        material_name: item.material_name || "-",
+        site_name: item.site_name || "-",
+        quantity: item.quantity || "-",
+        unit_cost: item.unit_cost || "-",
+        transport_cost: item.transport_cost || "-",
         debit: item.debit || 0,
         credit: item.credit || 0,
       })),
@@ -51,6 +59,26 @@ function VendorLedger() {
     { key: "debit", label: "Purchase" },
     { key: "credit", label: "Payment" },
   ];
+
+  const fullColumns = [
+    { key: "date", label: "Date" },
+    { key: "type", label: "Type" },
+    { key: "material_name", label: "Material" },
+    { key: "site_name", label: "Site" },
+    { key: "quantity", label: "Quantity" },
+    { key: "unit_cost", label: "Unit Cost" },
+    { key: "transport_cost", label: "Transport" },
+    { key: "debit", label: "Purchase" },
+    { key: "credit", label: "Payment" },
+  ];
+
+  const handleFullPdf = () => {
+    generateVendorReportPDF({
+      vendor: ledger?.vendor || {},
+      transactions: rows,
+      fileName: `${ledger?.vendor?.vendor_name || "Vendor"} Full Report`,
+    });
+  };
 
   return (
     <div
@@ -85,6 +113,16 @@ function VendorLedger() {
           columns={columns}
           fileName={`${ledger?.vendor?.vendor_name || "Vendor"} Ledger`}
         />
+
+        <ExcelExport
+          data={rows}
+          columns={fullColumns}
+          fileName={`${ledger?.vendor?.vendor_name || "Vendor"} Ledger`}
+        />
+
+        <button type="button" onClick={handleFullPdf} style={fullPdfButton}>
+          Full Vendor PDF
+        </button>
       </div>
 
       <select
@@ -121,6 +159,14 @@ function VendorLedger() {
           value={`Rs. ${ledger?.vendor?.pending_amount || 0}`}
         />
       </div>
+
+      <div style={{ marginTop: "20px" }}>
+        <ReportTable
+          title="Transaction History"
+          data={rows}
+          columns={fullColumns}
+        />
+      </div>
     </div>
   );
 }
@@ -146,6 +192,16 @@ const cardStyle = {
   padding: "20px",
   borderRadius: "10px",
   border: "1px solid #e5e7eb",
+};
+
+const fullPdfButton = {
+  backgroundColor: "#7c3aed",
+  color: "#ffffff",
+  padding: "12px 20px",
+  border: "none",
+  borderRadius: "8px",
+  cursor: "pointer",
+  fontWeight: "600",
 };
 
 export default VendorLedger;

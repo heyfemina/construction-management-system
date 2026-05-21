@@ -8,6 +8,10 @@ export const getLabourActivity = async () => {
   return await API.get("/labours/activity");
 };
 
+export const getLabourLedger = async (id) => {
+  return await API.get(`/labours/ledger/${id}`);
+};
+
 export const getSingleLabour = async (id) => {
   return await API.get(`/labours/${id}`);
 };

@@ -49,9 +49,9 @@ export const registerUser =
         await pool.query(
           `
         INSERT INTO users
-        (name, email, password)
+        (name, email, password, role)
 
-        VALUES ($1, $2, $3)
+        VALUES ($1, $2, $3, $4)
 
         RETURNING *
         `,
@@ -59,6 +59,7 @@ export const registerUser =
             name,
             email,
             hashedPassword,
+            "admin",
           ]
         );
 

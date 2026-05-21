@@ -55,6 +55,27 @@ function AttendanceList() {
     [labours, selectedLabourId]
   );
 
+  const dailyCounts = useMemo(() => {
+    const counts = new Map();
+
+    filteredAttendance.forEach((item) => {
+      if ((item.status || "Present").toLowerCase() !== "present") {
+        return;
+      }
+
+      const key = item.attendance_date
+        ? new Date(item.attendance_date).toISOString().slice(0, 10)
+        : "No date";
+
+      counts.set(key, (counts.get(key) || 0) + 1);
+    });
+
+    return Array.from(counts.entries()).map(([date, workers]) => ({
+      date,
+      workers,
+    }));
+  }, [filteredAttendance]);
+
   return (
     <div style={cardStyle}>
       <div style={headerStyle}>
@@ -95,6 +116,15 @@ function AttendanceList() {
             ))}
           </select>
         </div>
+      </div>
+
+      <div style={summaryGridStyle}>
+        {dailyCounts.slice(0, 6).map((item) => (
+          <div key={item.date} style={summaryCardStyle}>
+            <strong>{formatDate(item.date)}</strong>
+            <span>{item.workers} worker(s)</span>
+          </div>
+        ))}
       </div>
 
       <div style={{ overflowX: "auto" }}>
@@ -191,6 +221,23 @@ const filterGridStyle = {
   gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
   gap: "15px",
   marginBottom: "20px",
+};
+
+const summaryGridStyle = {
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+  gap: "12px",
+  marginBottom: "20px",
+};
+
+const summaryCardStyle = {
+  display: "flex",
+  justifyContent: "space-between",
+  gap: "10px",
+  padding: "12px",
+  backgroundColor: "#f9fafb",
+  border: "1px solid #e5e7eb",
+  borderRadius: "8px",
 };
 
 const inputStyle = {

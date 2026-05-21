@@ -41,6 +41,14 @@ function SiteTable() {
     loadSites();
   };
 
+  const handleEdit = (site) => {
+    window.dispatchEvent(
+      new CustomEvent("sites:edit", {
+        detail: site,
+      })
+    );
+  };
+
   return (
     <div style={tableWrapStyle}>
       <h2 style={headingStyle}>Sites List</h2>
@@ -51,6 +59,9 @@ function SiteTable() {
             <th style={tableHead}>Site Name</th>
             <th style={tableHead}>Location</th>
             <th style={tableHead}>Description</th>
+            <th style={tableHead}>Material Cost</th>
+            <th style={tableHead}>Expenses</th>
+            <th style={tableHead}>Labours</th>
             <th style={tableHead}>Action</th>
           </tr>
         </thead>
@@ -69,10 +80,20 @@ function SiteTable() {
                 <td style={tableData}>{site.site_name}</td>
                 <td style={tableData}>{site.location}</td>
                 <td style={tableData}>{site.description}</td>
+                <td style={tableData}>Rs. {site.material_cost || 0}</td>
+                <td style={tableData}>Rs. {site.total_expense || 0}</td>
+                <td style={tableData}>{site.labour_count || 0}</td>
                 <td style={tableData}>
                   <Link to={`/sites/details/${site.id}`} style={linkStyle}>
                     View
                   </Link>
+                  <button
+                    type="button"
+                    style={actionButtonStyle}
+                    onClick={() => handleEdit(site)}
+                  >
+                    Edit
+                  </button>
                   <button type="button" onClick={() => handleDelete(site.id)}>
                     Delete
                   </button>
@@ -88,7 +109,7 @@ function SiteTable() {
 function StatusRow({ text }) {
   return (
     <tr>
-      <td style={tableData} colSpan="4">
+      <td style={tableData} colSpan="7">
         {text}
       </td>
     </tr>
@@ -126,6 +147,10 @@ const linkStyle = {
   color: "#2563eb",
   fontWeight: "600",
   textDecoration: "none",
+};
+
+const actionButtonStyle = {
+  marginRight: "10px",
 };
 
 export default SiteTable;

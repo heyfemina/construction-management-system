@@ -3,6 +3,7 @@ function ReportTable({
   data = [],
   columns = [],
   loading = false,
+  error = "",
 }) {
   return (
     <div
@@ -40,6 +41,14 @@ function ReportTable({
         </thead>
 
         <tbody>
+          {!loading && error && (
+            <tr>
+              <td style={errorData} colSpan={columns.length}>
+                {error}
+              </td>
+            </tr>
+          )}
+
           {loading && (
             <tr>
               <td style={tableData} colSpan={columns.length}>
@@ -48,7 +57,7 @@ function ReportTable({
             </tr>
           )}
 
-          {!loading && data.length === 0 && (
+          {!loading && !error && data.length === 0 && (
             <tr>
               <td style={tableData} colSpan={columns.length}>
                 No records found
@@ -81,6 +90,12 @@ const tableHead = {
 const tableData = {
   borderBottom: "1px solid #e5e7eb",
   padding: "12px",
+};
+
+const errorData = {
+  ...tableData,
+  color: "#dc2626",
+  fontWeight: "600",
 };
 
 export default ReportTable;

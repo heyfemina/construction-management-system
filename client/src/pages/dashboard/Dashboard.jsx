@@ -10,7 +10,8 @@ import {
   FiUsers,
 } from "react-icons/fi";
 import { AuthContext } from "../../context/AuthContext";
-import { getDashboardSummary } from "../../api/financeApi";
+import { getDashboardSummary, getFinanceData } from "../../api/financeApi";
+import { getMaterialActivity } from "../../api/materialApi";
 import ExpenseChart from "../../components/dashboard/ExpenseChart";
 import LabourChart from "../../components/dashboard/LabourChart";
 import MaterialChart from "../../components/dashboard/MaterialChart";
@@ -18,10 +19,18 @@ import MaterialChart from "../../components/dashboard/MaterialChart";
 const defaultSummary = {
   totalExpenses: 0,
   pendingReceivables: 0,
+  pendingPayments: 0,
+  pendingVendorPayments: 0,
+  pendingLabourPayments: 0,
+  materialCosts: 0,
+  labourCosts: 0,
+  paidLabourCosts: 0,
   totalSites: 0,
   totalVendors: 0,
   totalWorkers: 0,
   totalMaterials: 0,
+  monthlyExpenses: [],
+  monthlyMaterials: [],
 };
 
 function Dashboard() {
@@ -31,8 +40,41 @@ function Dashboard() {
   useEffect(() => {
     const loadSummary = async () => {
       try {
-        const response = await getDashboardSummary();
-        setSummary(response.data.summary || defaultSummary);
+        const [summaryResult, financeResult, materialActivityResult] = await Promise.allSettled([
+          getDashboardSummary(),
+          getFinanceData(),
+          getMaterialActivity(),
+        ]);
+        const nextSummary =
+          summaryResult.status === "fulfilled"
+            ? summaryResult.value.data.summary || defaultSummary
+            : defaultSummary;
+        const finance =
+          financeResult.status === "fulfilled"
+            ? financeResult.value.data || {}
+            : {};
+        const materialActivity =
+          materialActivityResult.status === "fulfilled"
+            ? materialActivityResult.value.data || {}
+            : {};
+
+        setSummary({
+          ...defaultSummary,
+          ...nextSummary,
+          monthlyExpenses:
+            nextSummary.monthlyExpenses?.length > 0
+              ? nextSummary.monthlyExpenses
+              : buildMonthlySeries(finance.expenses || [], "expense_date", "amount", "expense"),
+          monthlyMaterials:
+            nextSummary.monthlyMaterials?.length > 0
+              ? nextSummary.monthlyMaterials
+              : buildMonthlySeries(
+                  materialActivity.purchases || [],
+                  "purchase_date",
+                  "total_cost",
+                  "materials"
+                ),
+        });
       } catch {
         setSummary(defaultSummary);
       }
@@ -61,25 +103,25 @@ function Dashboard() {
       bg: "#eff6ff",
     },
     {
-      label: "Pending Receivables",
-      value: formatMoney(summary.pendingReceivables),
-      detail: "Awaiting collection",
+      label: "Pending Payments",
+      value: formatMoney(summary.pendingPayments),
+      detail: "Vendor and labour dues",
       icon: FiTrendingUp,
       accent: "#b45309",
       bg: "#fffbeb",
     },
     {
-      label: "Active Sites",
-      value: summary.totalSites,
-      detail: "Managed projects",
-      icon: FiMapPin,
+      label: "Material Costs",
+      value: formatMoney(summary.materialCosts),
+      detail: "Live purchase total",
+      icon: FiBox,
       accent: "#059669",
       bg: "#ecfdf5",
     },
     {
-      label: "Workforce",
-      value: summary.totalWorkers,
-      detail: "Registered labour",
+      label: "Labour Costs",
+      value: formatMoney(summary.labourCosts),
+      detail: "Wages recorded",
       icon: FiUsers,
       accent: "#be123c",
       bg: "#fff1f2",
@@ -90,6 +132,33 @@ function Dashboard() {
     { label: "Vendors", value: summary.totalVendors, icon: FiBriefcase },
     { label: "Materials", value: summary.totalMaterials, icon: FiBox },
     { label: "Sites", value: summary.totalSites, icon: FiMapPin },
+  ];
+
+  const maxFinancialValue = Math.max(
+    summary.totalExpenses,
+    summary.pendingReceivables,
+    summary.pendingPayments,
+    summary.materialCosts,
+    summary.labourCosts,
+    1
+  );
+
+  const widthFor = (value) =>
+    `${Math.max(8, Math.round((Number(value || 0) / maxFinancialValue) * 100))}%`;
+
+  const actionFocus = [
+    {
+      text: `${formatMoney(summary.pendingReceivables)} receivables pending`,
+      tone: "#b45309",
+    },
+    {
+      text: `${formatMoney(summary.pendingVendorPayments)} vendor dues pending`,
+      tone: "#2563eb",
+    },
+    {
+      text: `${formatMoney(summary.pendingLabourPayments)} labour dues pending`,
+      tone: "#059669",
+    },
   ];
 
   return (
@@ -135,21 +204,25 @@ function Dashboard() {
               label="Spend captured"
               value={formatMoney(summary.totalExpenses)}
               color="#2563eb"
-              width={summary.totalExpenses > 0 ? "78%" : "12%"}
+              width={widthFor(summary.totalExpenses)}
             />
             <MetricRow
               label="Receivables pending"
               value={formatMoney(summary.pendingReceivables)}
               color="#b45309"
-              width={summary.pendingReceivables > 0 ? "52%" : "10%"}
+              width={widthFor(summary.pendingReceivables)}
+            />
+            <MetricRow
+              label="Payments pending"
+              value={formatMoney(summary.pendingPayments)}
+              color="#be123c"
+              width={widthFor(summary.pendingPayments)}
             />
           </div>
 
           <div style={insightBoxStyle}>
             <FiArrowUpRight size={20} />
-            <p>
-              Keep expenses and receivables updated daily to make this dashboard a reliable control room.
-            </p>
+            <p>{`Live totals include ${formatMoney(summary.materialCosts)} material cost and ${formatMoney(summary.labourCosts)} labour cost.`}</p>
           </div>
         </div>
 
@@ -194,20 +267,23 @@ function Dashboard() {
           </div>
 
           <div style={taskListStyle}>
-            <Task text="Review open receivables" tone="#b45309" />
-            <Task text="Update material entries" tone="#2563eb" />
-            <Task text="Check labour attendance" tone="#059669" />
+            {actionFocus.map((item) => (
+              <Task key={item.text} text={item.text} tone={item.tone} />
+            ))}
           </div>
         </div>
       </section>
 
       <section style={chartGridStyle}>
-        <ExpenseChart />
-        <MaterialChart />
+        <ExpenseChart data={summary.monthlyExpenses || []} />
+        <MaterialChart data={summary.monthlyMaterials || []} />
       </section>
 
       <section style={widePanelStyle}>
-        <LabourChart />
+        <LabourChart
+          paid={summary.paidLabourCosts}
+          pending={summary.pendingLabourPayments}
+        />
       </section>
     </div>
   );
@@ -255,6 +331,35 @@ function Task({ text, tone }) {
 
 function formatMoney(value) {
   return `Rs. ${Number(value || 0).toLocaleString("en-IN")}`;
+}
+
+function buildMonthlySeries(rows, dateKey, amountKey, outputKey) {
+  const monthMap = new Map();
+
+  rows.forEach((row) => {
+    const rawDate = row[dateKey] || row.created_at;
+    const date = rawDate ? new Date(rawDate) : null;
+
+    if (!date || Number.isNaN(date.getTime())) {
+      return;
+    }
+
+    const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+    const label = date.toLocaleDateString("en-IN", {
+      month: "short",
+      year: "numeric",
+    });
+
+    monthMap.set(key, {
+      month: label,
+      [outputKey]:
+        (monthMap.get(key)?.[outputKey] || 0) + Number(row[amountKey] || 0),
+    });
+  });
+
+  return Array.from(monthMap.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([, value]) => value);
 }
 
 const pageStyle = {

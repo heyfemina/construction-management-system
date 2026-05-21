@@ -178,6 +178,11 @@ function AppRoutes() {
         {/* REPORT ROUTES */}
 
         <Route
+          path="/reports"
+          element={<Navigate to="/reports/materials" replace />}
+        />
+
+        <Route
           path="/reports/materials"
           element={privatePage(<MaterialReports />)}
         />

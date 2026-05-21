@@ -15,6 +15,15 @@ export const addSite = async (data) => {
   return response.data;
 };
 
+export const updateSite = async (id, data) => {
+  const response = await siteApi.put(
+    `/${id}`,
+    data
+  );
+
+  return response.data;
+};
+
 export const deleteSite = async (id) => {
   const response = await siteApi.delete(
     `/${id}`

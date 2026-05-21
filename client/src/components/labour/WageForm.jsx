@@ -9,6 +9,9 @@ function WageForm() {
   const [saving, setSaving] = useState(false);
 
   const total = Number(days || 0) * Number(rate || 0);
+  const selectedLabour = labours.find(
+    (labour) => String(labour.id) === labourId
+  );
 
   const loadLabours = () => {
     getLabours()
@@ -72,7 +75,15 @@ function WageForm() {
           <select
             required
             value={labourId}
-            onChange={(e) => setLabourId(e.target.value)}
+            onChange={(e) => {
+              const nextLabourId = e.target.value;
+              const labour = labours.find(
+                (item) => String(item.id) === nextLabourId
+              );
+
+              setLabourId(nextLabourId);
+              setRate(labour?.daily_wage || "");
+            }}
             style={inputStyle}
           >
             <option value="">Select labour</option>
@@ -89,6 +100,9 @@ function WageForm() {
 
           <input
             type="number"
+            required
+            min="0"
+            step="0.5"
             value={days}
             onChange={(e) => setDays(e.target.value)}
             placeholder="Enter total days"
@@ -101,9 +115,16 @@ function WageForm() {
 
           <input
             type="number"
+            required
+            min="0"
+            step="0.01"
             value={rate}
             onChange={(e) => setRate(e.target.value)}
-            placeholder="Enter rate"
+            placeholder={
+              selectedLabour
+                ? `Default Rs. ${selectedLabour.daily_wage}/day`
+                : "Enter rate"
+            }
             style={inputStyle}
           />
         </div>

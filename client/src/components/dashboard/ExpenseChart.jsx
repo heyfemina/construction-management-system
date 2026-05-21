@@ -8,14 +8,7 @@ import {
   YAxis,
 } from "recharts";
 
-function ExpenseChart() {
-  const data = [
-    { month: "Jan", expense: 40000 },
-    { month: "Feb", expense: 55000 },
-    { month: "Mar", expense: 30000 },
-    { month: "Apr", expense: 70000 },
-  ];
-
+function ExpenseChart({ data = [] }) {
   return (
     <div style={cardStyle}>
       <div style={headerStyle}>
@@ -48,6 +41,7 @@ function ExpenseChart() {
           <Bar dataKey="expense" fill="#2563eb" radius={[8, 8, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
+      {data.length === 0 && <p style={emptyStyle}>No expense records yet</p>}
     </div>
   );
 }
@@ -100,6 +94,13 @@ const tooltipStyle = {
 
 const tooltipLabelStyle = {
   color: "var(--heading)",
+};
+
+const emptyStyle = {
+  margin: "-155px 0 130px",
+  textAlign: "center",
+  color: "var(--text-muted)",
+  fontWeight: "700",
 };
 
 export default ExpenseChart;

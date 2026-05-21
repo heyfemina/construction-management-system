@@ -3,12 +3,12 @@ function AuthLayout({ children }) {
     <div className="auth-shell">
       <section className="auth-hero">
         <div className="auth-hero-content">
-          <p>Construction Management</p>
-          <h1>Track sites, stock, labour, vendors, and cash flow.</h1>
+          <p>Construction Control</p>
+          <h1>One admin workspace for every site, cost, and crew.</h1>
           <div className="auth-stats">
-            <span>Materials</span>
-            <span>Vendors</span>
-            <span>Finance</span>
+            <span>Site Costing</span>
+            <span>Stock Ledger</span>
+            <span>Payment Control</span>
           </div>
         </div>
       </section>

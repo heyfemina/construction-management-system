@@ -26,4 +26,12 @@ export default async function ensureSchema() {
       `ALTER TABLE ${table} ADD COLUMN IF NOT EXISTS user_id INTEGER`
     );
   }
+
+  await pool.query(
+    "ALTER TABLE labour_payments ADD COLUMN IF NOT EXISTS payment_method VARCHAR(50)"
+  );
+
+  await pool.query(
+    "ALTER TABLE vendor_payments ADD COLUMN IF NOT EXISTS payment_method VARCHAR(50)"
+  );
 }

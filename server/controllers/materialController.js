@@ -237,6 +237,14 @@ export const addMaterialPurchase = async (req, res) => {
       notes,
     } = req.body;
 
+    const quantityNumber = Number(quantity || 0);
+    const unitCostNumber = Number(unit_cost || 0);
+    const transportCostNumber = Number(transport_cost || 0);
+    const calculatedTotal =
+      total_cost === undefined || total_cost === ""
+        ? quantityNumber * unitCostNumber + transportCostNumber
+        : Number(total_cost);
+
     const result = await pool.query(
       `
       INSERT INTO material_purchases
@@ -248,10 +256,10 @@ export const addMaterialPurchase = async (req, res) => {
         material_id || null,
         vendor_id || null,
         site_id || null,
-        quantity,
-        unit_cost,
-        transport_cost || 0,
-        total_cost,
+        quantityNumber,
+        unitCostNumber,
+        transportCostNumber,
+        calculatedTotal,
         purchase_date,
         notes || "",
         req.user.id,

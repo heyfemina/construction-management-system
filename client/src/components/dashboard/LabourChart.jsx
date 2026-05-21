@@ -6,11 +6,12 @@ import {
   Tooltip,
 } from "recharts";
 
-function LabourChart() {
+function LabourChart({ paid = 0, pending = 0 }) {
   const data = [
-    { name: "Paid", value: 70000, color: "#059669" },
-    { name: "Pending", value: 25000, color: "#be123c" },
+    { name: "Paid", value: Number(paid || 0), color: "#059669" },
+    { name: "Pending", value: Number(pending || 0), color: "#be123c" },
   ];
+  const hasData = data.some((item) => item.value > 0);
 
   return (
     <div style={cardStyle}>
@@ -25,13 +26,13 @@ function LabourChart() {
         <ResponsiveContainer width="100%" height={260}>
           <PieChart>
             <Pie
-              data={data}
+              data={hasData ? data : [{ name: "No data", value: 1, color: "#e5e7eb" }]}
               dataKey="value"
               innerRadius={64}
               outerRadius={100}
               paddingAngle={4}
             >
-              {data.map((entry) => (
+              {(hasData ? data : [{ name: "No data", value: 1, color: "#e5e7eb" }]).map((entry) => (
                 <Cell key={entry.name} fill={entry.color} />
               ))}
             </Pie>

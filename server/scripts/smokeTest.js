@@ -225,6 +225,11 @@ const run = async () => {
     token
   );
 
+  const financeAfterReceivable = await request("/finance", {}, token);
+  const clientId = financeAfterReceivable.clients.find((client) =>
+    client.client_name?.includes(`Smoke Client ${stamp}`)
+  )?.id;
+
   await request(
     "/finance/expenses",
     {
@@ -245,6 +250,7 @@ const run = async () => {
     {
       method: "POST",
       body: JSON.stringify({
+        client_id: clientId,
         payment_amount: 1000,
         payment_date: new Date().toISOString().slice(0, 10),
         payment_method: "Cash",
@@ -276,10 +282,15 @@ const run = async () => {
     request(`/materials/${material.material.id}`, {}, token),
     request("/vendors", {}, token),
     request(`/vendors/${vendor.vendor.id}`, {}, token),
+    request(`/vendors/ledger/${vendor.vendor.id}`, {}, token),
     request("/labours", {}, token),
     request(`/labours/${labour.labour.id}`, {}, token),
+    request(`/labours/ledger/${labour.labour.id}`, {}, token),
+    request("/labours/activity", {}, token),
     request("/finance", {}, token),
+    request(`/finance/ledger/${clientId}`, {}, token),
     request("/finance/summary", {}, token),
+    request(`/sites/report/${site.site.id}`, {}, token),
     request("/sites", {}, token),
     request(`/sites/${site.site.id}`, {}, token),
   ]);
@@ -291,17 +302,41 @@ const run = async () => {
         counts: {
         materials: checks[0].materials.length,
           vendors: checks[2].vendors.length,
-          labours: checks[4].labours.length,
-          expenses: checks[6].expenses.length,
-          sites: checks[8].sites.length,
+          vendorLedgerTransactions: checks[4].transactions.length,
+          labours: checks[5].labours.length,
+          labourLedgerTransactions: checks[7].transactions.length,
+          dailyLabourReports: checks[8].summaries.daily.length,
+          weeklyLabourReports: checks[8].summaries.weekly.length,
+          monthlyLabourReports: checks[8].summaries.monthly.length,
+          expenses: checks[9].expenses.length,
+          partyLedgerTransactions: checks[10].transactions.length,
+          siteMaterials: checks[12].materials.length,
+          siteLabours: checks[12].labours.length,
+          siteVendors: checks[12].vendors.length,
+          siteExpenses: checks[12].expenses.length,
+          sites: checks[13].sites.length,
         },
         detailChecks: {
           material: checks[1].material.material_name,
           vendor: checks[3].vendor.vendor_name,
-          labour: checks[5].labour.labour_name,
-          site: checks[9].site.site_name,
+          vendorLedgerPending: checks[4].vendor.pending_amount,
+          vendorLedgerFirstType: checks[4].transactions[0]?.type,
+          labour: checks[6].labour.labour_name,
+          labourLedgerPending: checks[7].labour.pending_amount,
+          labourLedgerFirstType: checks[7].transactions[0]?.type,
+          partyLedgerPending: checks[10].party.pending_amount,
+          partyLedgerFirstType: checks[10].transactions[0]?.type,
+          siteReport: checks[12].site.site_name,
+          site: checks[14].site.site_name,
         },
-        summary: checks[7].summary,
+        summary: checks[11].summary,
+        dashboardChecks: {
+          pendingPayments: checks[11].summary.pendingPayments,
+          materialCosts: checks[11].summary.materialCosts,
+          labourCosts: checks[11].summary.labourCosts,
+          monthlyExpenses: checks[11].summary.monthlyExpenses.length,
+          monthlyMaterials: checks[11].summary.monthlyMaterials.length,
+        },
       },
       null,
       2

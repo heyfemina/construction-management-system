@@ -4,6 +4,10 @@ export const getFinanceData = async () => {
   return await API.get("/finance");
 };
 
+export const getPartyLedger = async (clientId) => {
+  return await API.get(`/finance/ledger/${clientId}`);
+};
+
 export const createExpense = async (data) => {
   return await API.post("/finance/expenses", data);
 };

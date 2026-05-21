@@ -15,6 +15,15 @@ export const addVendor = async (data) => {
   return response.data;
 };
 
+export const updateVendor = async (id, data) => {
+  const response = await vendorApi.put(
+    `/${id}`,
+    data
+  );
+
+  return response.data;
+};
+
 export const deleteVendor = async (id) => {
   const response = await vendorApi.delete(
     `/${id}`

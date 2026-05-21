@@ -277,10 +277,166 @@ export const getLabourActivity =
           [req.user.id]
         );
 
+      const payments =
+        await pool.query(
+          `
+          SELECT
+            p.*,
+            l.labour_name
+          FROM labour_payments p
+          LEFT JOIN labours l ON l.id = p.labour_id
+          WHERE p.user_id = $1
+          ORDER BY p.payment_date DESC NULLS LAST, p.id DESC
+          `,
+          [req.user.id]
+        );
+
+      const dailySummary =
+        await pool.query(
+          `
+          SELECT
+            a.attendance_date AS period_start,
+            COUNT(DISTINCT a.labour_id)::int AS worker_count
+          FROM attendance a
+          WHERE a.user_id = $1
+            AND LOWER(COALESCE(a.status, 'present')) = 'present'
+          GROUP BY a.attendance_date
+          ORDER BY a.attendance_date DESC
+          `,
+          [req.user.id]
+        );
+
+      const weeklySummary =
+        await pool.query(
+          `
+          SELECT
+            DATE_TRUNC('week', a.attendance_date)::date AS period_start,
+            COUNT(DISTINCT a.labour_id)::int AS worker_count
+          FROM attendance a
+          WHERE a.user_id = $1
+            AND LOWER(COALESCE(a.status, 'present')) = 'present'
+          GROUP BY DATE_TRUNC('week', a.attendance_date)::date
+          ORDER BY period_start DESC
+          `,
+          [req.user.id]
+        );
+
+      const monthlySummary =
+        await pool.query(
+          `
+          SELECT
+            DATE_TRUNC('month', a.attendance_date)::date AS period_start,
+            COUNT(DISTINCT a.labour_id)::int AS worker_count
+          FROM attendance a
+          WHERE a.user_id = $1
+            AND LOWER(COALESCE(a.status, 'present')) = 'present'
+          GROUP BY DATE_TRUNC('month', a.attendance_date)::date
+          ORDER BY period_start DESC
+          `,
+          [req.user.id]
+        );
+
       res.status(200).json({
         success: true,
         attendance: attendance.rows,
         wages: wages.rows,
+        payments: payments.rows,
+        summaries: {
+          daily: dailySummary.rows,
+          weekly: weeklySummary.rows,
+          monthly: monthlySummary.rows,
+        },
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: error.message,
+      });
+    }
+  };
+
+export const getLabourLedger =
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+
+      const labour = await pool.query(
+        `
+        SELECT
+          l.*,
+          s.site_name,
+          COALESCE(w.total_wage, 0)::numeric AS total_wage,
+          COALESCE(pay.paid_amount, 0)::numeric AS paid_amount,
+          (
+            COALESCE(w.total_wage, 0) -
+            COALESCE(pay.paid_amount, 0)
+          )::numeric AS pending_amount
+        FROM labours l
+        LEFT JOIN sites s ON s.id = l.site_id
+        LEFT JOIN (
+          SELECT labour_id, SUM(total_amount) AS total_wage
+          FROM wages
+          WHERE user_id = $1
+          GROUP BY labour_id
+        ) w ON w.labour_id = l.id
+        LEFT JOIN (
+          SELECT labour_id, SUM(paid_amount) AS paid_amount
+          FROM labour_payments
+          WHERE user_id = $1
+          GROUP BY labour_id
+        ) pay ON pay.labour_id = l.id
+        WHERE l.id = $2 AND l.user_id = $1
+        `,
+        [req.user.id, id]
+      );
+
+      if (!labour.rows[0]) {
+        return res.status(404).json({
+          success: false,
+          message: "Labour not found",
+        });
+      }
+
+      const transactions = await pool.query(
+        `
+        SELECT
+          w.id,
+          COALESCE(
+            TO_DATE(NULLIF(w.wage_month, ''), 'YYYY-MM'),
+            w.created_at::date
+          ) AS transaction_date,
+          'Wage' AS type,
+          CONCAT(w.total_days, ' day(s) @ ', w.rate_per_day) AS description,
+          w.total_days,
+          w.rate_per_day,
+          w.total_amount AS debit,
+          0::numeric AS credit
+        FROM wages w
+        WHERE w.labour_id = $2 AND w.user_id = $1
+
+        UNION ALL
+
+        SELECT
+          p.id,
+          p.payment_date AS transaction_date,
+          'Payment' AS type,
+          COALESCE(NULLIF(p.payment_method, ''), 'Payment') AS description,
+          NULL::integer AS total_days,
+          NULL::numeric AS rate_per_day,
+          0::numeric AS debit,
+          p.paid_amount AS credit
+        FROM labour_payments p
+        WHERE p.labour_id = $2 AND p.user_id = $1
+
+        ORDER BY transaction_date DESC NULLS LAST, id DESC
+        `,
+        [req.user.id, id]
+      );
+
+      res.status(200).json({
+        success: true,
+        labour: labour.rows[0],
+        transactions: transactions.rows,
       });
     } catch (error) {
       res.status(500).json({
@@ -337,6 +493,13 @@ export const addWage = async (req, res) => {
       wage_month,
     } = req.body;
 
+    const days = Number(total_days || 0);
+    const rate = Number(rate_per_day || 0);
+    const calculatedTotal =
+      total_amount === undefined || total_amount === ""
+        ? days * rate
+        : Number(total_amount);
+
     const result = await pool.query(
       `
       INSERT INTO wages
@@ -346,9 +509,9 @@ export const addWage = async (req, res) => {
       `,
       [
         labour_id || null,
-        total_days,
-        rate_per_day,
-        total_amount,
+        days,
+        rate,
+        calculatedTotal,
         wage_month || "",
         req.user.id,
       ]
@@ -378,13 +541,6 @@ export const addLabourPayment = async (req, res) => {
       recipient_email,
     } = req.body;
 
-    if (!recipient_email) {
-      return res.status(400).json({
-        success: false,
-        message: "Recipient email is required",
-      });
-    }
-
     const labour = labour_id
       ? await pool.query(
           `
@@ -399,16 +555,19 @@ export const addLabourPayment = async (req, res) => {
     const result = await pool.query(
       `
       INSERT INTO labour_payments
-      (labour_id, total_amount, paid_amount, pending_amount, payment_date, user_id)
-      VALUES ($1, $2, $3, $4, $5, $6)
+      (labour_id, total_amount, paid_amount, pending_amount, payment_date, payment_method, user_id)
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
       RETURNING *
       `,
       [
         labour_id || null,
-        total_amount,
-        paid_amount || total_amount,
-        pending_amount || 0,
+        Number(total_amount || 0),
+        Number(paid_amount || 0),
+        pending_amount === undefined || pending_amount === ""
+          ? Number(total_amount || 0) - Number(paid_amount || 0)
+          : Number(pending_amount),
         payment_date || null,
+        payment_method || "",
         req.user.id,
       ]
     );
@@ -419,23 +578,25 @@ export const addLabourPayment = async (req, res) => {
       reason: "Email notification was not attempted",
     };
 
-    try {
-      email = await sendPaymentConfirmationEmail({
-        to: recipient_email,
-        recipientName: labour.rows[0]?.labour_name,
-        recipientType: "Labour",
-        amount: result.rows[0].paid_amount,
-        totalAmount: result.rows[0].total_amount,
-        pendingAmount: result.rows[0].pending_amount,
-        paymentDate: result.rows[0].payment_date,
-        paymentMethod: payment_method,
-        reference: `Labour Payment #${result.rows[0].id}`,
-      });
-    } catch (emailError) {
-      email = {
-        sent: false,
-        error: emailError.message,
-      };
+    if (recipient_email) {
+      try {
+        email = await sendPaymentConfirmationEmail({
+          to: recipient_email,
+          recipientName: labour.rows[0]?.labour_name,
+          recipientType: "Labour",
+          amount: result.rows[0].paid_amount,
+          totalAmount: result.rows[0].total_amount,
+          pendingAmount: result.rows[0].pending_amount,
+          paymentDate: result.rows[0].payment_date,
+          paymentMethod: result.rows[0].payment_method,
+          reference: `Labour Payment #${result.rows[0].id}`,
+        });
+      } catch (emailError) {
+        email = {
+          sent: false,
+          error: emailError.message,
+        };
+      }
     }
 
     res.status(201).json({

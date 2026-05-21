@@ -4,6 +4,7 @@ import ReceivableTable from "../../components/finance/ReceivableTable";
 import PaymentForm from "../../components/finance/PaymentForm";
 import ExpenseTable from "../../components/finance/ExpenseTable";
 import FinanceReport from "../../components/finance/FinanceReport";
+import PartyLedger from "../../components/finance/PartyLedger";
 
 function Finance() {
   return (
@@ -35,6 +36,8 @@ function Finance() {
       <ReceivableTable />
 
       <ExpenseTable />
+
+      <PartyLedger />
 
       <FinanceReport />
     </div>

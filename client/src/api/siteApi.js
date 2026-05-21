@@ -8,6 +8,10 @@ export const getSingleSite = async (id) => {
   return await API.get(`/sites/${id}`);
 };
 
+export const getSiteReport = async (id) => {
+  return await API.get(`/sites/report/${id}`);
+};
+
 export const createSite = async (data) => {
   return await API.post("/sites", data);
 };

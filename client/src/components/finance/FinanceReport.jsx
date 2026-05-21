@@ -6,6 +6,7 @@ function FinanceReport() {
     expenses: [],
     receivables: [],
     payments: [],
+    clients: [],
   });
 
   const loadFinance = async () => {
@@ -14,6 +15,7 @@ function FinanceReport() {
       expenses: response.data.expenses || [],
       receivables: response.data.receivables || [],
       payments: response.data.payments || [],
+      clients: response.data.clients || [],
     });
   };
 
@@ -40,6 +42,11 @@ function FinanceReport() {
         (total, item) => total + Number(item.pending_amount || 0),
         0
       ),
+      totalReceivable: finance.receivables.reduce(
+        (total, item) => total + Number(item.total_amount || 0),
+        0
+      ),
+      partyCount: finance.clients.length,
     }),
     [finance]
   );
@@ -82,6 +89,11 @@ function FinanceReport() {
           title="Pending Amount"
           value={`Rs. ${summary.pendingAmount}`}
         />
+        <ReportCard
+          title="Total Receivable"
+          value={`Rs. ${summary.totalReceivable}`}
+        />
+        <ReportCard title="Parties" value={summary.partyCount} />
       </div>
     </div>
   );

@@ -8,14 +8,7 @@ import {
   YAxis,
 } from "recharts";
 
-function MaterialChart() {
-  const data = [
-    { month: "Jan", materials: 20000 },
-    { month: "Feb", materials: 35000 },
-    { month: "Mar", materials: 28000 },
-    { month: "Apr", materials: 50000 },
-  ];
-
+function MaterialChart({ data = [] }) {
   return (
     <div style={cardStyle}>
       <div style={headerStyle}>
@@ -54,6 +47,7 @@ function MaterialChart() {
           />
         </LineChart>
       </ResponsiveContainer>
+      {data.length === 0 && <p style={emptyStyle}>No material purchases yet</p>}
     </div>
   );
 }
@@ -106,6 +100,13 @@ const tooltipStyle = {
 
 const tooltipLabelStyle = {
   color: "var(--heading)",
+};
+
+const emptyStyle = {
+  margin: "-155px 0 130px",
+  textAlign: "center",
+  color: "var(--text-muted)",
+  fontWeight: "700",
 };
 
 export default MaterialChart;

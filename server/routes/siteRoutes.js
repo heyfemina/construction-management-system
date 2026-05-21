@@ -3,6 +3,7 @@ import express from "express";
 import {
   getSites,
   getSingleSite,
+  getSiteReport,
   addSite,
   updateSite,
   deleteSite,
@@ -16,6 +17,12 @@ router.get(
   "/",
   authMiddleware,
   getSites
+);
+
+router.get(
+  "/report/:id",
+  authMiddleware,
+  getSiteReport
 );
 
 router.get(

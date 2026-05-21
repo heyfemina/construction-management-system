@@ -1,12 +1,39 @@
-import { useState } from "react";
-import { addSite } from "../../services/siteService";
+import { useEffect, useState } from "react";
+import { addSite, updateSite } from "../../services/siteService";
 
 function SiteForm() {
+  const [editingId, setEditingId] = useState("");
   const [siteName, setSiteName] = useState("");
   const [location, setLocation] = useState("");
   const [description, setDescription] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const handleEdit = (event) => {
+      const site = event.detail;
+
+      setEditingId(site.id);
+      setSiteName(site.site_name || "");
+      setLocation(site.location || "");
+      setDescription(site.description || "");
+      setError("");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+
+    window.addEventListener("sites:edit", handleEdit);
+
+    return () => {
+      window.removeEventListener("sites:edit", handleEdit);
+    };
+  }, []);
+
+  const resetForm = () => {
+    setEditingId("");
+    setSiteName("");
+    setLocation("");
+    setDescription("");
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -14,15 +41,19 @@ function SiteForm() {
     setLoading(true);
 
     try {
-      await addSite({
+      const payload = {
         site_name: siteName,
         location,
         description,
-      });
+      };
 
-      setSiteName("");
-      setLocation("");
-      setDescription("");
+      if (editingId) {
+        await updateSite(editingId, payload);
+      } else {
+        await addSite(payload);
+      }
+
+      resetForm();
       window.dispatchEvent(new Event("sites:changed"));
     } catch (err) {
       setError(err.response?.data?.message || "Could not save site");
@@ -33,7 +64,7 @@ function SiteForm() {
 
   return (
     <div style={cardStyle}>
-      <h2 style={headingStyle}>Add Site</h2>
+      <h2 style={headingStyle}>{editingId ? "Edit Site" : "Add Site"}</h2>
 
       <form onSubmit={handleSubmit}>
         {error && <p style={errorStyle}>{error}</p>}
@@ -73,9 +104,22 @@ function SiteForm() {
           />
         </div>
 
-        <button type="submit" style={buttonStyle} disabled={loading}>
-          {loading ? "Saving..." : "Save Site"}
-        </button>
+        <div style={buttonRowStyle}>
+          <button type="submit" style={buttonStyle} disabled={loading}>
+            {loading ? "Saving..." : editingId ? "Update Site" : "Save Site"}
+          </button>
+
+          {editingId && (
+            <button
+              type="button"
+              style={secondaryButtonStyle}
+              onClick={resetForm}
+              disabled={loading}
+            >
+              Cancel
+            </button>
+          )}
+        </div>
       </form>
     </div>
   );
@@ -103,7 +147,6 @@ const inputStyle = {
 };
 
 const buttonStyle = {
-  width: "100%",
   padding: "12px",
   backgroundColor: "#2563eb",
   color: "#ffffff",
@@ -111,6 +154,17 @@ const buttonStyle = {
   borderRadius: "8px",
   cursor: "pointer",
   fontWeight: "600",
+};
+
+const secondaryButtonStyle = {
+  ...buttonStyle,
+  backgroundColor: "#6b7280",
+};
+
+const buttonRowStyle = {
+  display: "flex",
+  gap: "10px",
+  flexWrap: "wrap",
 };
 
 const errorStyle = {
