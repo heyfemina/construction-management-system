@@ -32,6 +32,10 @@ export const createWage = async (data) => {
   return await API.post("/labours/wages", data);
 };
 
+export const createLabourPayment = async (data) => {
+  return await API.post("/labours/payments", data);
+};
+
 export default {
   get: (path = "") => API.get(`/labours${path}`),
   post: (path = "", data) => API.post(`/labours${path}`, data),

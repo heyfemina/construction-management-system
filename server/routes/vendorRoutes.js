@@ -2,8 +2,10 @@ import express from "express";
 
 import {
   getVendors,
+  getSingleVendor,
   getVendorLedger,
   addVendor,
+  updateVendor,
   deleteVendor,
   addVendorPayment,
 } from "../controllers/vendorController.js";
@@ -24,6 +26,12 @@ router.get(
   getVendorLedger
 );
 
+router.get(
+  "/:id",
+  authMiddleware,
+  getSingleVendor
+);
+
 router.post(
   "/",
   authMiddleware,
@@ -34,6 +42,12 @@ router.post(
   "/payments",
   authMiddleware,
   addVendorPayment
+);
+
+router.put(
+  "/:id",
+  authMiddleware,
+  updateVendor
 );
 
 router.delete(

@@ -166,7 +166,7 @@ function Dashboard() {
               const Icon = stat.icon;
               return (
                 <div key={stat.label} style={resourceTileStyle}>
-                  <Icon size={20} color="#334155" />
+                  <Icon size={20} />
                   <strong>{stat.value}</strong>
                   <span>{stat.label}</span>
                 </div>
@@ -332,11 +332,11 @@ const kpiCardStyle = {
   display: "flex",
   gap: "16px",
   alignItems: "flex-start",
-  backgroundColor: "#ffffff",
-  border: "1px solid #e5e7eb",
+  backgroundColor: "var(--surface)",
+  border: "1px solid var(--border)",
   borderRadius: "8px",
   padding: "20px",
-  boxShadow: "0 10px 30px rgba(15, 23, 42, 0.06)",
+  boxShadow: "var(--shadow-sm)",
 };
 
 const iconShellStyle = {
@@ -351,20 +351,20 @@ const iconShellStyle = {
 
 const kpiLabelStyle = {
   margin: 0,
-  color: "#64748b",
+  color: "var(--text-muted)",
   fontSize: "14px",
   fontWeight: "700",
 };
 
 const kpiValueStyle = {
   margin: "6px 0 4px",
-  color: "#0f172a",
+  color: "var(--heading)",
   fontSize: "28px",
   lineHeight: 1.1,
 };
 
 const kpiDetailStyle = {
-  color: "#94a3b8",
+  color: "var(--text-muted)",
   fontSize: "13px",
 };
 
@@ -375,11 +375,11 @@ const mainGridStyle = {
 };
 
 const panelStyle = {
-  backgroundColor: "#ffffff",
-  border: "1px solid #e5e7eb",
+  backgroundColor: "var(--surface)",
+  border: "1px solid var(--border)",
   borderRadius: "8px",
   padding: "22px",
-  boxShadow: "0 10px 30px rgba(15, 23, 42, 0.06)",
+  boxShadow: "var(--shadow-sm)",
 };
 
 const panelHeaderStyle = {
@@ -392,7 +392,7 @@ const panelHeaderStyle = {
 
 const sectionLabelStyle = {
   margin: "0 0 5px",
-  color: "#64748b",
+  color: "var(--text-muted)",
   fontSize: "12px",
   fontWeight: "800",
   textTransform: "uppercase",
@@ -400,15 +400,15 @@ const sectionLabelStyle = {
 
 const panelTitleStyle = {
   margin: 0,
-  color: "#0f172a",
+  color: "var(--heading)",
   fontSize: "21px",
 };
 
 const statusPillStyle = {
   padding: "6px 10px",
   borderRadius: "999px",
-  backgroundColor: "#ecfdf5",
-  color: "#047857",
+  backgroundColor: "var(--accent-soft)",
+  color: "var(--accent-strong)",
   fontSize: "12px",
   fontWeight: "800",
 };
@@ -424,14 +424,14 @@ const metricHeaderStyle = {
   justifyContent: "space-between",
   gap: "12px",
   marginBottom: "8px",
-  color: "#334155",
+  color: "var(--text)",
   fontSize: "14px",
 };
 
 const metricTrackStyle = {
   height: "9px",
   borderRadius: "999px",
-  backgroundColor: "#f1f5f9",
+  backgroundColor: "var(--surface-subtle)",
   overflow: "hidden",
 };
 
@@ -447,8 +447,8 @@ const insightBoxStyle = {
   marginTop: "22px",
   padding: "14px",
   borderRadius: "8px",
-  backgroundColor: "#f8fafc",
-  color: "#475569",
+  backgroundColor: "var(--surface-subtle)",
+  color: "var(--text)",
   lineHeight: 1.5,
 };
 
@@ -464,8 +464,8 @@ const resourceTileStyle = {
   gap: "8px",
   padding: "14px",
   borderRadius: "8px",
-  backgroundColor: "#f8fafc",
-  color: "#475569",
+  backgroundColor: "var(--surface-subtle)",
+  color: "var(--text)",
 };
 
 const progressBlockStyle = {
@@ -476,13 +476,13 @@ const progressHeaderStyle = {
   display: "flex",
   justifyContent: "space-between",
   marginBottom: "9px",
-  color: "#334155",
+  color: "var(--text)",
   fontSize: "14px",
 };
 
 const progressTrackStyle = {
   height: "10px",
-  backgroundColor: "#e2e8f0",
+  backgroundColor: "var(--surface-subtle)",
   borderRadius: "999px",
   overflow: "hidden",
 };
@@ -504,8 +504,8 @@ const taskStyle = {
   alignItems: "center",
   gap: "10px",
   padding: "13px 0",
-  borderBottom: "1px solid #f1f5f9",
-  color: "#334155",
+  borderBottom: "1px solid var(--border)",
+  color: "var(--text)",
   fontWeight: "700",
 };
 

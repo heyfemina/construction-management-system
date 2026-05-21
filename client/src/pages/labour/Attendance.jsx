@@ -1,4 +1,5 @@
 import AttendanceForm from "../../components/labour/AttendanceForm";
+import AttendanceList from "../../components/labour/AttendanceList";
 
 function Attendance() {
   return (
@@ -14,6 +15,7 @@ function Attendance() {
       </h1>
 
       <AttendanceForm />
+      <AttendanceList />
     </div>
   );
 }

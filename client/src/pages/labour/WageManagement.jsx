@@ -1,4 +1,5 @@
 import WageForm from "../../components/labour/WageForm";
+import LabourPaymentForm from "../../components/labour/LabourPaymentForm";
 
 function WageManagement() {
   return (
@@ -14,6 +15,7 @@ function WageManagement() {
       </h1>
 
       <WageForm />
+      <LabourPaymentForm />
     </div>
   );
 }

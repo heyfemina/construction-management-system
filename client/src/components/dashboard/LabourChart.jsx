@@ -35,7 +35,10 @@ function LabourChart() {
                 <Cell key={entry.name} fill={entry.color} />
               ))}
             </Pie>
-            <Tooltip />
+            <Tooltip
+              contentStyle={tooltipStyle}
+              labelStyle={tooltipLabelStyle}
+            />
           </PieChart>
         </ResponsiveContainer>
 
@@ -54,11 +57,11 @@ function LabourChart() {
 }
 
 const cardStyle = {
-  backgroundColor: "#ffffff",
+  backgroundColor: "var(--surface)",
   padding: "22px",
   borderRadius: "8px",
-  border: "1px solid #e5e7eb",
-  boxShadow: "0 10px 30px rgba(15, 23, 42, 0.06)",
+  border: "1px solid var(--border)",
+  boxShadow: "var(--shadow-sm)",
 };
 
 const headerStyle = {
@@ -71,7 +74,7 @@ const headerStyle = {
 
 const labelStyle = {
   margin: "0 0 5px",
-  color: "#64748b",
+  color: "var(--text-muted)",
   fontSize: "12px",
   fontWeight: "800",
   textTransform: "uppercase",
@@ -80,7 +83,7 @@ const labelStyle = {
 const titleStyle = {
   margin: 0,
   fontSize: "21px",
-  color: "#0f172a",
+  color: "var(--heading)",
 };
 
 const contentStyle = {
@@ -103,14 +106,25 @@ const legendItemStyle = {
   alignItems: "center",
   padding: "14px",
   borderRadius: "8px",
-  backgroundColor: "#f8fafc",
-  color: "#334155",
+  backgroundColor: "var(--surface-subtle)",
+  color: "var(--text)",
 };
 
 const dotStyle = {
   width: "10px",
   height: "10px",
   borderRadius: "999px",
+};
+
+const tooltipStyle = {
+  backgroundColor: "var(--surface)",
+  border: "1px solid var(--border)",
+  borderRadius: "8px",
+  color: "var(--text)",
+};
+
+const tooltipLabelStyle = {
+  color: "var(--heading)",
 };
 
 export default LabourChart;

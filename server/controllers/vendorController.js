@@ -1,4 +1,5 @@
 import pool from "../config/db.js";
+import { sendPaymentConfirmationEmail } from "../services/emailService.js";
 
 export const getVendors =
   async (req, res) => {
@@ -77,6 +78,106 @@ export const addVendor = async (
       );
 
     res.status(201).json({
+      success: true,
+      vendor: result.rows[0],
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const getSingleVendor = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const result = await pool.query(
+      `
+      SELECT
+        v.*,
+        COALESCE(p.total_purchase, 0)::numeric AS total_purchase,
+        COALESCE(pay.paid_amount, 0)::numeric AS paid_amount,
+        (
+          COALESCE(p.total_purchase, 0) -
+          COALESCE(pay.paid_amount, 0)
+        )::numeric AS pending_amount
+      FROM vendors v
+      LEFT JOIN (
+        SELECT vendor_id, SUM(total_cost) AS total_purchase
+        FROM material_purchases
+        WHERE user_id = $1
+        GROUP BY vendor_id
+      ) p ON p.vendor_id = v.id
+      LEFT JOIN (
+        SELECT vendor_id, SUM(paid_amount) AS paid_amount
+        FROM vendor_payments
+        WHERE user_id = $1
+        GROUP BY vendor_id
+      ) pay ON pay.vendor_id = v.id
+      WHERE v.id = $2 AND v.user_id = $1
+      `,
+      [req.user.id, id]
+    );
+
+    if (!result.rows[0]) {
+      return res.status(404).json({
+        success: false,
+        message: "Vendor not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      vendor: result.rows[0],
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const updateVendor = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {
+      vendor_name,
+      contact_number,
+      email,
+      address,
+    } = req.body;
+
+    const result = await pool.query(
+      `
+      UPDATE vendors
+      SET vendor_name = $1,
+          contact_number = $2,
+          email = $3,
+          address = $4
+      WHERE id = $5 AND user_id = $6
+      RETURNING *
+      `,
+      [
+        vendor_name,
+        contact_number || "",
+        email || "",
+        address || "",
+        id,
+        req.user.id,
+      ]
+    );
+
+    if (!result.rows[0]) {
+      return res.status(404).json({
+        success: false,
+        message: "Vendor not found",
+      });
+    }
+
+    res.status(200).json({
       success: true,
       vendor: result.rows[0],
     });
@@ -200,7 +301,26 @@ export const addVendorPayment = async (req, res) => {
       pending_amount,
       payment_date,
       payment_method,
+      recipient_email,
     } = req.body;
+
+    if (!recipient_email) {
+      return res.status(400).json({
+        success: false,
+        message: "Recipient email is required",
+      });
+    }
+
+    const vendor = vendor_id
+      ? await pool.query(
+          `
+          SELECT vendor_name, email
+          FROM vendors
+          WHERE id = $1 AND user_id = $2
+          `,
+          [vendor_id, req.user.id]
+        )
+      : { rows: [] };
 
     const result = await pool.query(
       `
@@ -220,9 +340,35 @@ export const addVendorPayment = async (req, res) => {
       ]
     );
 
+    let email = {
+      sent: false,
+      skipped: true,
+      reason: "Email notification was not attempted",
+    };
+
+    try {
+      email = await sendPaymentConfirmationEmail({
+        to: recipient_email,
+        recipientName: vendor.rows[0]?.vendor_name,
+        recipientType: "Vendor",
+        amount: result.rows[0].paid_amount,
+        totalAmount: result.rows[0].total_amount,
+        pendingAmount: result.rows[0].pending_amount,
+        paymentDate: result.rows[0].payment_date,
+        paymentMethod: result.rows[0].payment_method,
+        reference: `Vendor Payment #${result.rows[0].id}`,
+      });
+    } catch (emailError) {
+      email = {
+        sent: false,
+        error: emailError.message,
+      };
+    }
+
     res.status(201).json({
       success: true,
       payment: result.rows[0],
+      email,
     });
   } catch (error) {
     res.status(500).json({

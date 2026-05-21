@@ -6,6 +6,7 @@ import {
 
 function VendorPaymentForm() {
   const [vendorId, setVendorId] = useState("");
+  const [recipientEmail, setRecipientEmail] = useState("");
   const [amount, setAmount] = useState("");
   const [method, setMethod] = useState("");
   const [vendors, setVendors] = useState([]);
@@ -38,9 +39,11 @@ function VendorPaymentForm() {
         pending_amount: 0,
         payment_date: new Date().toISOString().slice(0, 10),
         payment_method: method,
+        recipient_email: recipientEmail,
       });
 
       setVendorId("");
+      setRecipientEmail("");
       setAmount("");
       setMethod("");
       window.dispatchEvent(new Event("vendors:changed"));
@@ -74,7 +77,15 @@ function VendorPaymentForm() {
           <select
             required
             value={vendorId}
-            onChange={(e) => setVendorId(e.target.value)}
+            onChange={(e) => {
+              const nextVendorId = e.target.value;
+              const vendor = vendors.find(
+                (item) => String(item.id) === nextVendorId
+              );
+
+              setVendorId(nextVendorId);
+              setRecipientEmail(vendor?.email || "");
+            }}
             style={inputStyle}
           >
             <option value="">Select vendor</option>
@@ -84,6 +95,18 @@ function VendorPaymentForm() {
               </option>
             ))}
           </select>
+        </div>
+
+        <div style={{ marginBottom: "15px" }}>
+          <label>Vendor Email</label>
+          <input
+            type="email"
+            required
+            value={recipientEmail}
+            onChange={(e) => setRecipientEmail(e.target.value)}
+            placeholder="Enter vendor email"
+            style={inputStyle}
+          />
         </div>
 
         <div style={{ marginBottom: "15px" }}>

@@ -3,7 +3,9 @@ import express from "express";
 import {
   getMaterials,
   getMaterialActivity,
+  getSingleMaterial,
   addMaterial,
+  updateMaterial,
   deleteMaterial,
   addMaterialPurchase,
   addMaterialUsage,
@@ -25,6 +27,12 @@ router.get(
   getMaterialActivity
 );
 
+router.get(
+  "/:id",
+  authMiddleware,
+  getSingleMaterial
+);
+
 router.post(
   "/",
   authMiddleware,
@@ -41,6 +49,12 @@ router.post(
   "/usage",
   authMiddleware,
   addMaterialUsage
+);
+
+router.put(
+  "/:id",
+  authMiddleware,
+  updateMaterial
 );
 
 router.delete(

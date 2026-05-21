@@ -58,11 +58,49 @@ export const getSingleSite =
       const result =
         await pool.query(
           `
-        SELECT * FROM sites
-        WHERE id = $1 AND user_id = $2
+        SELECT
+          s.*,
+          COALESCE(e.total_expense, 0)::numeric AS total_expense,
+          COALESCE(m.material_cost, 0)::numeric AS material_cost,
+          COALESCE(w.labour_cost, 0)::numeric AS labour_cost,
+          COALESCE(l.labour_count, 0)::int AS labour_count
+        FROM sites s
+        LEFT JOIN (
+          SELECT site_id, SUM(amount) AS total_expense
+          FROM expenses
+          WHERE user_id = $2
+          GROUP BY site_id
+        ) e ON e.site_id = s.id
+        LEFT JOIN (
+          SELECT site_id, SUM(total_cost) AS material_cost
+          FROM material_purchases
+          WHERE user_id = $2
+          GROUP BY site_id
+        ) m ON m.site_id = s.id
+        LEFT JOIN (
+          SELECT l.site_id, SUM(w.total_amount) AS labour_cost
+          FROM wages w
+          LEFT JOIN labours l ON l.id = w.labour_id
+          WHERE w.user_id = $2
+          GROUP BY l.site_id
+        ) w ON w.site_id = s.id
+        LEFT JOIN (
+          SELECT site_id, COUNT(*) AS labour_count
+          FROM labours
+          WHERE user_id = $2
+          GROUP BY site_id
+        ) l ON l.site_id = s.id
+        WHERE s.id = $1 AND s.user_id = $2
         `,
           [id, req.user.id]
         );
+
+      if (!result.rows[0]) {
+        return res.status(404).json({
+          success: false,
+          message: "Site not found",
+        });
+      }
 
       res.status(200).json({
         success: true,

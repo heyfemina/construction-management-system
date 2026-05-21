@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { deleteSite, getSites } from "../../services/siteService";
 import isConnectionError from "../../utils/isConnectionError";
 
@@ -69,6 +70,9 @@ function SiteTable() {
                 <td style={tableData}>{site.location}</td>
                 <td style={tableData}>{site.description}</td>
                 <td style={tableData}>
+                  <Link to={`/sites/details/${site.id}`} style={linkStyle}>
+                    View
+                  </Link>
                   <button type="button" onClick={() => handleDelete(site.id)}>
                     Delete
                   </button>
@@ -115,6 +119,13 @@ const tableHead = {
 const tableData = {
   borderBottom: "1px solid #e5e7eb",
   padding: "12px",
+};
+
+const linkStyle = {
+  marginRight: "10px",
+  color: "#2563eb",
+  fontWeight: "600",
+  textDecoration: "none",
 };
 
 export default SiteTable;

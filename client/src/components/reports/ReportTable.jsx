@@ -3,7 +3,6 @@ function ReportTable({
   data = [],
   columns = [],
   loading = false,
-  error = "",
 }) {
   return (
     <div

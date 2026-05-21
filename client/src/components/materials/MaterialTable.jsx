@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { deleteMaterial, getMaterials } from "../../services/materialService";
 import ExcelExport from "../reports/ExcelExport";
 import PDFExport from "../reports/PDFExport";
@@ -147,6 +148,9 @@ function MaterialTable() {
               <td style={tableData}>{material.total_received || 0}</td>
               <td style={tableData}>{material.remaining_stock || 0}</td>
               <td style={tableData}>
+                <Link to={`/materials/details/${material.id}`} style={linkStyle}>
+                  View
+                </Link>
                 <button type="button" onClick={() => handleDelete(material.id)}>
                   Delete
                 </button>
@@ -169,6 +173,13 @@ const tableHead = {
 const tableData = {
   borderBottom: "1px solid #e5e7eb",
   padding: "12px",
+};
+
+const linkStyle = {
+  marginRight: "10px",
+  color: "#2563eb",
+  fontWeight: "600",
+  textDecoration: "none",
 };
 
 export default MaterialTable;

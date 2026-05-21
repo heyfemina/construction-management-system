@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { deleteVendor, getVendors } from "../../services/vendorService";
 import ExcelExport from "../reports/ExcelExport";
 import PDFExport from "../reports/PDFExport";
@@ -148,6 +149,9 @@ function VendorTable() {
               <td style={tableData}>Rs. {vendor.paid_amount || 0}</td>
               <td style={tableData}>Rs. {vendor.pending_amount || 0}</td>
               <td style={tableData}>
+                <Link to={`/vendors/details/${vendor.id}`} style={linkStyle}>
+                  View
+                </Link>
                 <button type="button" onClick={() => handleDelete(vendor.id)}>
                   Delete
                 </button>
@@ -170,6 +174,13 @@ const tableHead = {
 const tableData = {
   borderBottom: "1px solid #e5e7eb",
   padding: "12px",
+};
+
+const linkStyle = {
+  marginRight: "10px",
+  color: "#2563eb",
+  fontWeight: "600",
+  textDecoration: "none",
 };
 
 export default VendorTable;

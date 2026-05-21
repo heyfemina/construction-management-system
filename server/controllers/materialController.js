@@ -57,6 +57,65 @@ export const getMaterials = async (
   }
 };
 
+export const getSingleMaterial = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const result = await pool.query(
+      `
+      SELECT
+        m.*,
+        s.site_name,
+        COALESCE(p.total_received, 0)::numeric AS total_received,
+        COALESCE(u.total_used, 0)::numeric AS total_used,
+        (
+          COALESCE(p.total_received, 0) -
+          COALESCE(u.total_used, 0)
+        )::numeric AS remaining_stock,
+        COALESCE(p.total_cost, 0)::numeric AS total_cost,
+        COALESCE(p.transport_cost, 0)::numeric AS transport_cost
+      FROM materials m
+      LEFT JOIN sites s ON s.id = m.site_id
+      LEFT JOIN (
+        SELECT
+          material_id,
+          SUM(quantity) AS total_received,
+          SUM(total_cost) AS total_cost,
+          SUM(transport_cost) AS transport_cost
+        FROM material_purchases
+        WHERE user_id = $1
+        GROUP BY material_id
+      ) p ON p.material_id = m.id
+      LEFT JOIN (
+        SELECT material_id, SUM(used_quantity) AS total_used
+        FROM material_usage
+        WHERE user_id = $1
+        GROUP BY material_id
+      ) u ON u.material_id = m.id
+      WHERE m.id = $2 AND m.user_id = $1
+      `,
+      [req.user.id, id]
+    );
+
+    if (!result.rows[0]) {
+      return res.status(404).json({
+        success: false,
+        message: "Material not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      material: result.rows[0],
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 export const addMaterial = async (
   req,
   res
@@ -87,6 +146,46 @@ export const addMaterial = async (
       );
 
     res.status(201).json({
+      success: true,
+      material: result.rows[0],
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const updateMaterial = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { site_id, material_name, unit } = req.body;
+
+    const result = await pool.query(
+      `
+      UPDATE materials
+      SET site_id = $1, material_name = $2, unit = $3
+      WHERE id = $4 AND user_id = $5
+      RETURNING *
+      `,
+      [
+        site_id || null,
+        material_name,
+        unit,
+        id,
+        req.user.id,
+      ]
+    );
+
+    if (!result.rows[0]) {
+      return res.status(404).json({
+        success: false,
+        message: "Material not found",
+      });
+    }
+
+    res.status(200).json({
       success: true,
       material: result.rows[0],
     });

@@ -28,10 +28,22 @@ function MaterialChart() {
 
       <ResponsiveContainer width="100%" height={280}>
         <LineChart data={data}>
-          <CartesianGrid stroke="#e2e8f0" vertical={false} />
-          <XAxis dataKey="month" axisLine={false} tickLine={false} />
-          <YAxis axisLine={false} tickLine={false} />
-          <Tooltip />
+          <CartesianGrid stroke="var(--border)" vertical={false} />
+          <XAxis
+            dataKey="month"
+            axisLine={false}
+            tickLine={false}
+            tick={{ fill: "var(--text-muted)" }}
+          />
+          <YAxis
+            axisLine={false}
+            tickLine={false}
+            tick={{ fill: "var(--text-muted)" }}
+          />
+          <Tooltip
+            contentStyle={tooltipStyle}
+            labelStyle={tooltipLabelStyle}
+          />
           <Line
             type="monotone"
             dataKey="materials"
@@ -47,11 +59,11 @@ function MaterialChart() {
 }
 
 const cardStyle = {
-  backgroundColor: "#ffffff",
+  backgroundColor: "var(--surface)",
   padding: "22px",
   borderRadius: "8px",
-  border: "1px solid #e5e7eb",
-  boxShadow: "0 10px 30px rgba(15, 23, 42, 0.06)",
+  border: "1px solid var(--border)",
+  boxShadow: "var(--shadow-sm)",
 };
 
 const headerStyle = {
@@ -64,7 +76,7 @@ const headerStyle = {
 
 const labelStyle = {
   margin: "0 0 5px",
-  color: "#64748b",
+  color: "var(--text-muted)",
   fontSize: "12px",
   fontWeight: "800",
   textTransform: "uppercase",
@@ -73,16 +85,27 @@ const labelStyle = {
 const titleStyle = {
   margin: 0,
   fontSize: "21px",
-  color: "#0f172a",
+  color: "var(--heading)",
 };
 
 const pillStyle = {
   padding: "6px 10px",
   borderRadius: "999px",
-  backgroundColor: "#ecfdf5",
-  color: "#047857",
+  backgroundColor: "var(--accent-soft)",
+  color: "var(--accent-strong)",
   fontSize: "12px",
   fontWeight: "800",
+};
+
+const tooltipStyle = {
+  backgroundColor: "var(--surface)",
+  border: "1px solid var(--border)",
+  borderRadius: "8px",
+  color: "var(--text)",
+};
+
+const tooltipLabelStyle = {
+  color: "var(--heading)",
 };
 
 export default MaterialChart;

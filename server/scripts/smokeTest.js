@@ -61,6 +61,20 @@ const run = async () => {
     token
   );
 
+  await request(
+    `/vendors/${vendor.vendor.id}`,
+    {
+      method: "PUT",
+      body: JSON.stringify({
+        vendor_name: `${vendor.vendor.vendor_name} Updated`,
+        contact_number: "9999999999",
+        email: `vendor-${stamp}@example.com`,
+        address: "Test Address",
+      }),
+    },
+    token
+  );
+
   const material = await request(
     "/materials",
     {
@@ -68,6 +82,19 @@ const run = async () => {
       body: JSON.stringify({
         site_id: site.site.id,
         material_name: `Smoke Cement ${stamp}`,
+        unit: "bag",
+      }),
+    },
+    token
+  );
+
+  await request(
+    `/materials/${material.material.id}`,
+    {
+      method: "PUT",
+      body: JSON.stringify({
+        site_id: site.site.id,
+        material_name: `${material.material.material_name} Updated`,
         unit: "bag",
       }),
     },
@@ -122,6 +149,21 @@ const run = async () => {
   );
 
   await request(
+    `/labours/${labour.labour.id}`,
+    {
+      method: "PUT",
+      body: JSON.stringify({
+        site_id: site.site.id,
+        labour_name: `${labour.labour.labour_name} Updated`,
+        contact_number: "8888888888",
+        address: "Test Address",
+        daily_wage: 650,
+      }),
+    },
+    token
+  );
+
+  await request(
     "/labours/attendance",
     {
       method: "POST",
@@ -145,6 +187,23 @@ const run = async () => {
         rate_per_day: 600,
         total_amount: 600,
         wage_month: new Date().toISOString().slice(0, 7),
+      }),
+    },
+    token
+  );
+
+  await request(
+    "/labours/payments",
+    {
+      method: "POST",
+      body: JSON.stringify({
+        labour_id: labour.labour.id,
+        total_amount: 600,
+        paid_amount: 600,
+        pending_amount: 0,
+        payment_date: new Date().toISOString().slice(0, 10),
+        payment_method: "Cash",
+        recipient_email: `labour-${stamp}@example.com`,
       }),
     },
     token
@@ -195,13 +254,34 @@ const run = async () => {
     token
   );
 
+  await request(
+    "/vendors/payments",
+    {
+      method: "POST",
+      body: JSON.stringify({
+        vendor_id: vendor.vendor.id,
+        total_amount: 2600,
+        paid_amount: 1000,
+        pending_amount: 1600,
+        payment_date: new Date().toISOString().slice(0, 10),
+        payment_method: "Cash",
+        recipient_email: `vendor-${stamp}@example.com`,
+      }),
+    },
+    token
+  );
+
   const checks = await Promise.all([
     request("/materials", {}, token),
+    request(`/materials/${material.material.id}`, {}, token),
     request("/vendors", {}, token),
+    request(`/vendors/${vendor.vendor.id}`, {}, token),
     request("/labours", {}, token),
+    request(`/labours/${labour.labour.id}`, {}, token),
     request("/finance", {}, token),
     request("/finance/summary", {}, token),
     request("/sites", {}, token),
+    request(`/sites/${site.site.id}`, {}, token),
   ]);
 
   console.log(
@@ -209,13 +289,19 @@ const run = async () => {
       {
         success: true,
         counts: {
-          materials: checks[0].materials.length,
-          vendors: checks[1].vendors.length,
-          labours: checks[2].labours.length,
-          expenses: checks[3].expenses.length,
-          sites: checks[5].sites.length,
+        materials: checks[0].materials.length,
+          vendors: checks[2].vendors.length,
+          labours: checks[4].labours.length,
+          expenses: checks[6].expenses.length,
+          sites: checks[8].sites.length,
         },
-        summary: checks[4].summary,
+        detailChecks: {
+          material: checks[1].material.material_name,
+          vendor: checks[3].vendor.vendor_name,
+          labour: checks[5].labour.labour_name,
+          site: checks[9].site.site_name,
+        },
+        summary: checks[7].summary,
       },
       null,
       2
