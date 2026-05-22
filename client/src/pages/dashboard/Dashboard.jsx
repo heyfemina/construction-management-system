@@ -774,6 +774,90 @@ function Dashboard() {
             gap: 18px;
           }
 
+          .dashboard-kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 18px;
+            align-items: stretch;
+          }
+
+          .dashboard-kpi-card {
+            width: 100%;
+            min-width: 0;
+            min-height: 138px;
+            display: grid;
+            grid-template-columns: 48px minmax(0, 1fr);
+            grid-template-rows: auto 1fr auto;
+            column-gap: 14px;
+            row-gap: 10px;
+            padding: 18px;
+            border-radius: 8px;
+            background-color: var(--surface);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+          }
+
+          .dashboard-kpi-icon {
+            grid-column: 1;
+            grid-row: 1 / span 2;
+            width: 48px;
+            height: 48px;
+            min-width: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            color: var(--kpi-accent);
+            background-color: var(--kpi-soft);
+          }
+
+          .dashboard-kpi-copy {
+            grid-column: 2;
+            grid-row: 1;
+            min-width: 0;
+          }
+
+          .dashboard-kpi-copy p {
+            margin: 0;
+            color: var(--heading);
+            font-size: 15px;
+            font-weight: 800;
+            line-height: 1.3;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+
+          .dashboard-kpi-copy span {
+            display: block;
+            margin-top: 4px;
+            color: var(--text-muted);
+            font-size: 12px;
+            font-weight: 600;
+            line-height: 1.35;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+
+          .dashboard-kpi-value {
+            grid-column: 1 / -1;
+            grid-row: 3;
+            display: block;
+            width: 100%;
+            min-width: 0;
+            margin-top: 4px;
+            color: var(--heading);
+            font-size: clamp(20px, 1.9vw, 28px);
+            font-weight: 900;
+            line-height: 1.15;
+            letter-spacing: -0.04em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+
           .premium-dashboard-chart-grid {
             display: grid;
             grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -802,6 +886,10 @@ function Dashboard() {
           }
 
           @media (max-width: 1180px) {
+            .dashboard-kpi-grid {
+              grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
             .premium-dashboard-main-grid {
               grid-template-columns: repeat(2, minmax(0, 1fr));
             }
@@ -826,6 +914,16 @@ function Dashboard() {
 
             .premium-dashboard-chart-grid {
               grid-template-columns: 1fr;
+            }
+          }
+
+          @media (max-width: 560px) {
+            .dashboard-kpi-grid {
+              grid-template-columns: 1fr;
+            }
+
+            .dashboard-kpi-card {
+              min-height: auto;
             }
           }
 
@@ -865,7 +963,7 @@ function Dashboard() {
         </div>
       </section>
 
-      <section style={kpiGridStyle}>
+      <section className="dashboard-kpi-grid">
         {kpis.map((item) => (
           <KpiCard key={item.label} item={item} />
         ))}
@@ -1001,7 +1099,9 @@ function KpiCard({ item }) {
         <span>{item.detail}</span>
       </div>
 
-      <strong className="dashboard-kpi-value">{item.value}</strong>
+      <strong className="dashboard-kpi-value" title={item.value}>
+        {item.value}
+      </strong>
     </div>
   );
 }
@@ -1130,12 +1230,6 @@ const heroMetricValueStyle = {
   display: "block",
   marginTop: "4px",
   fontSize: "30px",
-};
-
-const kpiGridStyle = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-  gap: "18px",
 };
 
 const panelStyle = {
