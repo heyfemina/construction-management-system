@@ -27,11 +27,14 @@ function MaterialReport() {
             total.totalStock + Number(material.remaining_stock || 0),
           totalCost:
             total.totalCost + Number(material.total_cost || 0),
+          transportCost:
+            total.transportCost + Number(material.transport_cost || 0),
         }),
         {
           totalMaterials: 0,
           totalStock: 0,
           totalCost: 0,
+          transportCost: 0,
         }
       ),
     [materials]
@@ -68,6 +71,10 @@ function MaterialReport() {
         <ReportCard
           title="Total Material Cost"
           value={`Rs. ${summary.totalCost}`}
+        />
+        <ReportCard
+          title="Transport Charges"
+          value={`Rs. ${summary.transportCost}`}
         />
       </div>
     </div>

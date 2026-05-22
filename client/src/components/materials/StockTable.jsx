@@ -68,6 +68,8 @@ function StockTable() {
             <th style={tableHead}>Received</th>
             <th style={tableHead}>Used</th>
             <th style={tableHead}>Remaining</th>
+            <th style={tableHead}>Cost / Unit</th>
+            <th style={tableHead}>Transport</th>
             <th style={tableHead}>Cost</th>
           </tr>
         </thead>
@@ -85,7 +87,9 @@ function StockTable() {
               <td style={tableData}>{stock.total_received}</td>
               <td style={tableData}>{stock.total_used}</td>
               <td style={tableData}>{stock.remaining_stock}</td>
-              <td style={tableData}>Rs. {stock.total_cost}</td>
+              <td style={tableData}>Rs. {formatNumber(stock.avg_unit_cost)}</td>
+              <td style={tableData}>Rs. {formatNumber(stock.transport_cost)}</td>
+              <td style={tableData}>Rs. {formatNumber(stock.total_cost)}</td>
             </tr>
           ))}
         </tbody>
@@ -97,11 +101,17 @@ function StockTable() {
 function StatusRow({ text }) {
   return (
     <tr>
-      <td style={tableData} colSpan="6">
+      <td style={tableData} colSpan="8">
         {text}
       </td>
     </tr>
   );
+}
+
+function formatNumber(value) {
+  return Number(value || 0).toLocaleString("en-IN", {
+    maximumFractionDigits: 2,
+  });
 }
 
 const tableHead = {

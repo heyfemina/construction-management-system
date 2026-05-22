@@ -50,7 +50,9 @@ function MaterialTable() {
     { key: "total_received", label: "Received" },
     { key: "total_used", label: "Used" },
     { key: "remaining_stock", label: "Remaining" },
+    { key: "avg_unit_cost", label: "Cost / Unit" },
     { key: "total_cost", label: "Cost" },
+    { key: "transport_cost", label: "Transport" },
   ];
 
   return (
@@ -116,7 +118,10 @@ function MaterialTable() {
             <th style={tableHead}>Site</th>
             <th style={tableHead}>Unit</th>
             <th style={tableHead}>Received</th>
+            <th style={tableHead}>Used</th>
             <th style={tableHead}>Remaining</th>
+            <th style={tableHead}>Cost / Unit</th>
+            <th style={tableHead}>Total Cost</th>
             <th style={tableHead}>Action</th>
           </tr>
         </thead>
@@ -124,19 +129,19 @@ function MaterialTable() {
         <tbody>
           {loading && (
             <tr>
-              <td style={tableData} colSpan="6">Loading...</td>
+              <td style={tableData} colSpan="9">Loading...</td>
             </tr>
           )}
 
           {!loading && error && (
             <tr>
-              <td style={tableData} colSpan="6">{error}</td>
+              <td style={tableData} colSpan="9">{error}</td>
             </tr>
           )}
 
           {!loading && !error && materials.length === 0 && (
             <tr>
-              <td style={tableData} colSpan="6">No materials yet</td>
+              <td style={tableData} colSpan="9">No materials yet</td>
             </tr>
           )}
 
@@ -146,7 +151,10 @@ function MaterialTable() {
               <td style={tableData}>{material.site_name || "-"}</td>
               <td style={tableData}>{material.unit}</td>
               <td style={tableData}>{material.total_received || 0}</td>
+              <td style={tableData}>{material.total_used || 0}</td>
               <td style={tableData}>{material.remaining_stock || 0}</td>
+              <td style={tableData}>Rs. {formatNumber(material.avg_unit_cost)}</td>
+              <td style={tableData}>Rs. {formatNumber(material.total_cost)}</td>
               <td style={tableData}>
                 <Link to={`/materials/details/${material.id}`} style={linkStyle}>
                   View
@@ -161,6 +169,12 @@ function MaterialTable() {
       </table>
     </div>
   );
+}
+
+function formatNumber(value) {
+  return Number(value || 0).toLocaleString("en-IN", {
+    maximumFractionDigits: 2,
+  });
 }
 
 const tableHead = {

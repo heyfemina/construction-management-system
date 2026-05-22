@@ -61,7 +61,9 @@ function SiteTable() {
             <th style={tableHead}>Description</th>
             <th style={tableHead}>Material Cost</th>
             <th style={tableHead}>Expenses</th>
+            <th style={tableHead}>Materials</th>
             <th style={tableHead}>Labours</th>
+            <th style={tableHead}>Vendors</th>
             <th style={tableHead}>Action</th>
           </tr>
         </thead>
@@ -82,10 +84,12 @@ function SiteTable() {
                 <td style={tableData}>{site.description}</td>
                 <td style={tableData}>Rs. {site.material_cost || 0}</td>
                 <td style={tableData}>Rs. {site.total_expense || 0}</td>
+                <td style={tableData}>{site.material_count || 0}</td>
                 <td style={tableData}>{site.labour_count || 0}</td>
+                <td style={tableData}>{site.vendor_count || 0}</td>
                 <td style={tableData}>
                   <Link to={`/sites/details/${site.id}`} style={linkStyle}>
-                    View
+                    Site Report
                   </Link>
                   <button
                     type="button"
@@ -109,7 +113,7 @@ function SiteTable() {
 function StatusRow({ text }) {
   return (
     <tr>
-      <td style={tableData} colSpan="7">
+      <td style={tableData} colSpan="9">
         {text}
       </td>
     </tr>

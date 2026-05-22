@@ -101,6 +101,11 @@ const searchablePages = [
     keywords: "vendor report supplier",
   },
   {
+    title: "Labour Attendance Report",
+    path: "/reports/labour-attendance",
+    keywords: "labour attendance worker present absent report search",
+  },
+  {
     title: "Labour Reports",
     path: "/reports/labours",
     keywords: "labour report attendance wage",

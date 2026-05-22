@@ -11,6 +11,10 @@ function VendorPaymentForm() {
   const [method, setMethod] = useState("");
   const [vendors, setVendors] = useState([]);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const selectedVendor = vendors.find(
+    (vendor) => String(vendor.id) === String(vendorId)
+  );
 
   const loadVendors = () => {
     getVendors()
@@ -29,6 +33,18 @@ function VendorPaymentForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+
+    if (!vendorId || Number(amount) <= 0) {
+      setError("Select vendor and enter payment amount.");
+      return;
+    }
+
+    if (Number(amount) > Number(selectedVendor?.pending_amount || 0)) {
+      setError("Payment amount cannot be more than pending amount.");
+      return;
+    }
+
     setSaving(true);
 
     try {
@@ -47,6 +63,8 @@ function VendorPaymentForm() {
       setAmount("");
       setMethod("");
       window.dispatchEvent(new Event("vendors:changed"));
+    } catch (err) {
+      setError(err.response?.data?.message || "Could not save vendor payment");
     } finally {
       setSaving(false);
     }
@@ -72,6 +90,8 @@ function VendorPaymentForm() {
       </h2>
 
       <form onSubmit={handleSubmit}>
+        {error && <p style={errorStyle}>{error}</p>}
+
         <div style={{ marginBottom: "15px" }}>
           <label>Vendor</label>
           <select
@@ -96,6 +116,14 @@ function VendorPaymentForm() {
             ))}
           </select>
         </div>
+
+        {selectedVendor && (
+          <p style={hintStyle}>
+            Total purchase: Rs. {selectedVendor.total_purchase || 0} | Paid: Rs.{" "}
+            {selectedVendor.paid_amount || 0} | Pending: Rs.{" "}
+            {selectedVendor.pending_amount || 0}
+          </p>
+        )}
 
         <div style={{ marginBottom: "15px" }}>
           <label>Vendor Email</label>
@@ -159,6 +187,18 @@ const buttonStyle = {
   border: "none",
   borderRadius: "8px",
   cursor: "pointer",
+  fontWeight: "600",
+};
+
+const hintStyle = {
+  margin: "-6px 0 15px",
+  color: "#6b7280",
+  fontWeight: "600",
+};
+
+const errorStyle = {
+  color: "#dc2626",
+  marginBottom: "12px",
   fontWeight: "600",
 };
 

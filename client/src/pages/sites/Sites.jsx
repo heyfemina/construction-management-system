@@ -45,9 +45,14 @@ function Sites() {
         {sites.map((site) => (
           <SiteCard
             key={site.id}
+            id={site.id}
             siteName={site.site_name}
             location={site.location || "-"}
             totalExpense={site.total_expense || 0}
+            materialCount={site.material_count || 0}
+            labourCount={site.labour_count || 0}
+            vendorCount={site.vendor_count || 0}
+            expenseCount={site.expense_count || 0}
           />
         ))}
       </div>

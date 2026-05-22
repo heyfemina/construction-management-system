@@ -4,8 +4,10 @@ export const getLabours = async () => {
   return await API.get("/labours");
 };
 
-export const getLabourActivity = async () => {
-  return await API.get("/labours/activity");
+export const getLabourActivity = async (search = "") => {
+  return await API.get("/labours/activity", {
+    params: { search },
+  });
 };
 
 export const getLabourLedger = async (id) => {

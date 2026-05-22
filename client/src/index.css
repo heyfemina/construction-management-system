@@ -808,11 +808,8 @@ a {
   text-decoration: none;
 }
 
-.app-main :where(section, article, form, div)[style*="background: white"],
-.app-main :where(section, article, form, div)[style*="background:#fff"],
-.app-main :where(section, article, form, div)[style*="backgroundColor: white"],
-.app-main :where(section, article, form, div)[style*="backgroundColor: \"#fff\""] {
-  background: var(--surface) !important;
+.app-main {
+  color: var(--text);
 }
 
 .app-main :where(table) {
@@ -837,37 +834,79 @@ a {
   border-color: var(--border) !important;
 }
 
+.app-main :where(input, textarea, select)::placeholder {
+  color: var(--text-muted) !important;
+  opacity: 1;
+}
+
+.app-main :where(label) {
+  color: var(--text);
+}
+
 .app-main :where(h1, h2, h3, h4, h5, h6) {
   color: var(--heading);
 }
 
-:root[data-theme="dark"] .app-main :where(div, section, article, form)[style] {
-  background-color: var(--surface) !important;
-  border-color: var(--border) !important;
+.app-main :where(
+  [style*="background: white"],
+  [style*="background:#fff"],
+  [style*="background-color: white"],
+  [style*="background-color: rgb(255, 255, 255)"],
+  [style*="background-color: #ffffff"]
+) {
+  background: var(--surface) !important;
+}
+
+.app-main :where(
+  [style*="background-color: rgb(249, 250, 251)"],
+  [style*="background-color: #f9fafb"],
+  [style*="background-color: rgb(243, 244, 246)"],
+  [style*="background-color: #f3f4f6"]
+) {
+  background: var(--surface-subtle) !important;
 }
 
 :root[data-theme="dark"] .app-main :where(
-  p,
-  span,
-  strong,
-  small,
-  label,
-  li,
+  [style*="color: rgb(17, 24, 39)"],
+  [style*="color: #111827"],
+  [style*="color: rgb(31, 41, 55)"],
+  [style*="color: #1f2937"],
+  [style*="color: rgb(55, 65, 81)"],
+  [style*="color: #374151"]
+) {
+  color: var(--text) !important;
+}
+
+:root[data-theme="dark"] .app-main :where(
+  [style*="color: rgb(75, 85, 99)"],
+  [style*="color: #4b5563"],
+  [style*="color: rgb(107, 114, 128)"],
+  [style*="color: #6b7280"]
+) {
+  color: var(--text-muted) !important;
+}
+
+:root[data-theme="dark"] .app-main :where(
   h1,
   h2,
   h3,
   h4,
   h5,
   h6,
-  td,
-  th
+  strong
 )[style] {
-  color: var(--text) !important;
+  color: var(--heading) !important;
 }
 
-:root[data-theme="dark"] .app-main :where(h1, h2, h3, h4, h5, h6)[style],
-:root[data-theme="dark"] .app-main :where(strong)[style] {
-  color: var(--heading) !important;
+:root[data-theme="dark"] .app-main :where(
+  p,
+  span,
+  small,
+  label,
+  li,
+  td
+)[style*="color"] {
+  color: var(--text) !important;
 }
 
 :root[data-theme="dark"] .app-main :where(

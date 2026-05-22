@@ -46,6 +46,8 @@ function SiteDetails() {
     { key: "total_received", label: "Received" },
     { key: "total_used", label: "Used" },
     { key: "remaining_stock", label: "Remaining" },
+    { key: "avg_unit_cost", label: "Cost / Unit" },
+    { key: "transport_cost", label: "Transport" },
     { key: "total_cost", label: "Cost" },
   ];
 
@@ -110,7 +112,7 @@ function SiteDetails() {
     <div>
       <div style={cardStyle}>
         <div style={headerStyle}>
-          <h1 style={headingStyle}>Site Details</h1>
+          <h1 style={headingStyle}>Site Report</h1>
 
           {!loading && !error && site && (
             <div style={actionsStyle}>
@@ -143,36 +145,57 @@ function SiteDetails() {
             />
             <Detail label="Labour Cost" value={`Rs. ${site.labour_cost || 0}`} />
             <Detail label="Labour Count" value={site.labour_count || 0} />
+            <Detail label="Materials" value={report.materials.length} />
             <Detail label="Vendors" value={report.vendors.length} />
+            <Detail label="Expenses" value={report.expenses.length} />
           </div>
         )}
       </div>
 
       {!loading && !error && site && (
         <div style={tablesStyle}>
-          <ReportTable
+          <SectionReport
             title="Site Materials"
             data={report.materials}
             columns={materialColumns}
+            fileName={`${site.site_name} Materials Report`}
           />
-          <ReportTable
+          <SectionReport
             title="Site Labour"
             data={report.labours}
             columns={labourColumns}
+            fileName={`${site.site_name} Labour Report`}
           />
-          <ReportTable
+          <SectionReport
             title="Site Vendors"
             data={report.vendors}
             columns={vendorColumns}
+            fileName={`${site.site_name} Vendor Report`}
           />
-          <ReportTable
+          <SectionReport
             title="Site Expenses"
             data={report.expenses}
             columns={expenseColumns}
+            fileName={`${site.site_name} Expense Report`}
           />
         </div>
       )}
     </div>
+  );
+}
+
+function SectionReport({ title, data, columns, fileName }) {
+  return (
+    <section>
+      <div style={sectionHeaderStyle}>
+        <h2 style={sectionHeadingStyle}>{title}</h2>
+        <div style={actionsStyle}>
+          <PDFExport data={data} columns={columns} fileName={fileName} />
+          <ExcelExport data={data} columns={columns} fileName={fileName} />
+        </div>
+      </div>
+      <ReportTable title={title} data={data} columns={columns} />
+    </section>
   );
 }
 
@@ -208,6 +231,21 @@ const actionsStyle = {
   display: "flex",
   gap: "10px",
   flexWrap: "wrap",
+};
+
+const sectionHeaderStyle = {
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  gap: "12px",
+  flexWrap: "wrap",
+  marginBottom: "12px",
+};
+
+const sectionHeadingStyle = {
+  fontSize: "22px",
+  fontWeight: "700",
+  margin: 0,
 };
 
 const detailGridStyle = {

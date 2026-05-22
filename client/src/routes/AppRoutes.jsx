@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import AuthLayout from "../layouts/AuthLayout";
 import DashboardLayout from "../layouts/DashboardLayout";
@@ -34,6 +34,7 @@ import Payments from "../pages/finance/Payments";
 
 import MaterialReports from "../pages/reports/MaterialReports";
 import VendorReports from "../pages/reports/VendorReports";
+import LabourAttendanceReports from "../pages/reports/LabourAttendanceReports";
 import LabourReports from "../pages/reports/LabourReports";
 import FinancialReports from "../pages/reports/FinancialReports";
 import SiteReports from "../pages/reports/SiteReports";
@@ -56,7 +57,7 @@ function AppRoutes() {
   );
 
   return (
-    <BrowserRouter>
+    <HashRouter>
       <Routes>
 
         {/* AUTH ROUTES */}
@@ -193,6 +194,11 @@ function AppRoutes() {
         />
 
         <Route
+          path="/reports/labour-attendance"
+          element={privatePage(<LabourAttendanceReports />)}
+        />
+
+        <Route
           path="/reports/labours"
           element={privatePage(<LabourReports />)}
         />
@@ -225,7 +231,7 @@ function AppRoutes() {
         />
 
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
 

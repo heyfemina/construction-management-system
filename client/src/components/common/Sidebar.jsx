@@ -32,6 +32,7 @@ const menuGroups = [
       { name: "Material Report", path: "/reports/materials", icon: FileText },
       { name: "Vendor Report", path: "/reports/vendors", icon: FileText },
       { name: "Labour Report", path: "/reports/labours", icon: FileText },
+      { name: "Labour Attendance", path: "/reports/labour-attendance", icon: CalendarCheck },
       { name: "Financial Report", path: "/reports/financial", icon: BarChart3 },
       { name: "Site Report", path: "/reports/sites", icon: Briefcase },
     ],

@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
+import { Search } from "lucide-react";
 
 import {
   getFinanceData,
 } from "../../api/financeApi";
-import { getLabours } from "../../api/labourApi";
+import { getLabourActivity, getLabours } from "../../api/labourApi";
 import { getMaterials } from "../../api/materialApi";
 import { getSites } from "../../api/siteApi";
 import { getVendors } from "../../api/vendorApi";
@@ -33,6 +34,7 @@ const reportConfigs = {
       total_received: item.total_received || 0,
       total_used: item.total_used || 0,
       remaining_stock: item.remaining_stock || 0,
+      avg_unit_cost: money(item.avg_unit_cost),
       total_cost: money(item.total_cost),
       transport_cost: money(item.transport_cost),
       created_at: formatDate(item.created_at),
@@ -44,6 +46,7 @@ const reportConfigs = {
       { key: "total_received", label: "Received" },
       { key: "total_used", label: "Used" },
       { key: "remaining_stock", label: "Remaining" },
+      { key: "avg_unit_cost", label: "Cost / Unit" },
       { key: "total_cost", label: "Total Cost" },
       { key: "transport_cost", label: "Transport" },
       { key: "created_at", label: "Created Date" },
@@ -75,6 +78,36 @@ const reportConfigs = {
       { key: "total_purchase", label: "Purchase" },
       { key: "paid_amount", label: "Paid" },
       { key: "pending_amount", label: "Pending" },
+    ],
+  },
+  "labour-attendance": {
+    title: "Labour Attendance Report",
+    fileName: "Labour Attendance Report",
+    tableTitle: "All Labour Attendance",
+    helperText:
+      "Showing labour attendance records. Search by labour name to find attendance data quickly.",
+    searchLabel: "Labour Name Search",
+    searchPlaceholder: "Search labour name",
+    searchFields: ["labour_name"],
+    serverSearch: true,
+    load: async (search = "") => {
+      const response = await getLabourActivity(search);
+      return response.data.attendance || [];
+    },
+    map: (item) => ({
+      id: item.id,
+      attendance_date: formatDate(item.attendance_date),
+      labour_name: item.labour_name,
+      site_name: item.site_name || "-",
+      status: item.status || "Present",
+      created_at: formatDate(item.created_at),
+    }),
+    columns: [
+      { key: "attendance_date", label: "Date" },
+      { key: "labour_name", label: "Labour Name" },
+      { key: "site_name", label: "Site" },
+      { key: "status", label: "Attendance Status" },
+      { key: "created_at", label: "Marked At" },
     ],
   },
   labours: {
@@ -211,8 +244,10 @@ function formatDate(value) {
 function ReportPage({ type }) {
   const config = reportConfigs[type];
   const [rawData, setRawData] = useState([]);
+  const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const loadSearch = config.serverSearch ? search : "";
 
   useEffect(() => {
     let active = true;
@@ -222,7 +257,7 @@ function ReportPage({ type }) {
         setLoading(true);
         setError("");
 
-        const rows = await config.load();
+        const rows = await config.load(loadSearch);
 
         if (active) {
           setRawData(rows);
@@ -252,11 +287,25 @@ function ReportPage({ type }) {
     return () => {
       active = false;
     };
-  }, [config]);
+  }, [config, loadSearch]);
+
+  const filteredRows = useMemo(() => {
+    const query = search.trim().toLowerCase();
+
+    if (config.serverSearch || !query || !config.searchFields?.length) {
+      return rawData;
+    }
+
+    return rawData.filter((item) =>
+      config.searchFields.some((field) =>
+        String(item[field] || "").toLowerCase().includes(query)
+      )
+    );
+  }, [config, rawData, search]);
 
   const data = useMemo(
-    () => rawData.map(config.map),
-    [config, rawData]
+    () => filteredRows.map(config.map),
+    [config, filteredRows]
   );
 
   return (
@@ -272,6 +321,72 @@ function ReportPage({ type }) {
       </h1>
 
       <ReportFilter value={type} />
+
+      {config.helperText && (
+        <p
+          style={{
+            color: "#4b5563",
+            fontWeight: "600",
+            margin: "-8px 0 18px",
+          }}
+        >
+          {config.helperText}
+        </p>
+      )}
+
+      {config.searchFields?.length > 0 && (
+        <div
+          style={{
+            backgroundColor: "#ffffff",
+            padding: "18px",
+            borderRadius: "12px",
+            marginBottom: "20px",
+            boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
+          }}
+        >
+          <label
+            htmlFor="report-search"
+            style={{
+              display: "block",
+              fontWeight: "700",
+              marginBottom: "8px",
+            }}
+          >
+            {config.searchLabel || "Search"}
+          </label>
+          <div
+            style={{
+              position: "relative",
+            }}
+          >
+            <Search
+              size={18}
+              strokeWidth={2.3}
+              style={{
+                position: "absolute",
+                left: "12px",
+                top: "50%",
+                transform: "translateY(-50%)",
+                color: "#6b7280",
+                pointerEvents: "none",
+              }}
+            />
+            <input
+              id="report-search"
+              type="search"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder={config.searchPlaceholder || "Search report"}
+              style={{
+                width: "100%",
+                padding: "12px 12px 12px 40px",
+                borderRadius: "8px",
+                border: "1px solid #d1d5db",
+              }}
+            />
+          </div>
+        </div>
+      )}
 
       <div
         style={{

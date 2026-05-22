@@ -23,6 +23,10 @@ function PurchaseForm() {
     Number(quantity) * Number(unitCost) +
     Number(transportCost || 0);
 
+  const selectedMaterial = materials.find(
+    (material) => String(material.id) === String(materialId)
+  );
+
   const loadOptions = () => {
     Promise.all([getMaterials(), getVendors(), getSites()])
       .then(([materialsResponse, vendorsResponse, sitesResponse]) => {
@@ -54,8 +58,14 @@ function PurchaseForm() {
     e.preventDefault();
     setError("");
 
-    if (!materialId || !vendorId || Number(quantity) <= 0 || Number(unitCost) <= 0) {
-      setError("Select material/vendor and enter quantity plus unit cost.");
+    if (
+      !materialId ||
+      !vendorId ||
+      !siteId ||
+      Number(quantity) <= 0 ||
+      Number(unitCost) <= 0
+    ) {
+      setError("Select material, vendor, site and enter quantity plus unit cost.");
       return;
     }
 
@@ -81,6 +91,7 @@ function PurchaseForm() {
       setTransportCost("");
       window.dispatchEvent(new Event("materials:changed"));
       window.dispatchEvent(new Event("vendors:changed"));
+      window.dispatchEvent(new Event("sites:changed"));
     } catch (err) {
       setError(err.response?.data?.message || "Could not save purchase");
     } finally {
@@ -114,10 +125,19 @@ function PurchaseForm() {
           label="Material"
           required
           value={materialId}
-          onChange={setMaterialId}
+          onChange={(nextMaterialId) => {
+            setMaterialId(nextMaterialId);
+            const material = materials.find(
+              (item) => String(item.id) === String(nextMaterialId)
+            );
+
+            if (material?.site_id) {
+              setSiteId(String(material.site_id));
+            }
+          }}
           options={materials.map((material) => ({
             value: material.id,
-            label: material.material_name,
+            label: `${material.material_name} (${material.site_name || "No site"})`,
           }))}
         />
 
@@ -134,6 +154,7 @@ function PurchaseForm() {
 
         <SelectField
           label="Site"
+          required
           value={siteId}
           onChange={setSiteId}
           options={sites.map((site) => ({
@@ -141,6 +162,12 @@ function PurchaseForm() {
             label: site.site_name,
           }))}
         />
+
+        {selectedMaterial?.unit && (
+          <p style={hintStyle}>
+            Quantity unit: {selectedMaterial.unit}
+          </p>
+        )}
 
         <InputField
           label="Quantity"
@@ -248,6 +275,12 @@ const buttonStyle = {
 const errorStyle = {
   color: "#dc2626",
   marginBottom: "12px",
+  fontWeight: "600",
+};
+
+const hintStyle = {
+  margin: "-6px 0 15px",
+  color: "#6b7280",
   fontWeight: "600",
 };
 

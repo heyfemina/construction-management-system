@@ -247,6 +247,8 @@ export const deleteLabour =
 export const getLabourActivity =
   async (req, res) => {
     try {
+      const search = String(req.query.search || "").trim();
+
       const attendance =
         await pool.query(
           `
@@ -258,9 +260,13 @@ export const getLabourActivity =
           LEFT JOIN labours l ON l.id = a.labour_id
           LEFT JOIN sites s ON s.id = a.site_id
           WHERE a.user_id = $1
+            AND (
+              $2 = ''
+              OR l.labour_name ILIKE '%' || $2 || '%'
+            )
           ORDER BY a.attendance_date DESC, a.id DESC
           `,
-          [req.user.id]
+          [req.user.id, search]
         );
 
       const wages =

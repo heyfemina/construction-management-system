@@ -48,6 +48,7 @@ function ReportFilter({ value = "" }) {
         <option value="materials">Material Reports</option>
         <option value="vendors">Vendor Reports</option>
         <option value="labours">Labour Reports</option>
+        <option value="labour-attendance">Labour Attendance Report</option>
         <option value="financial">Financial Reports</option>
         <option value="sites">Site Reports</option>
       </select>

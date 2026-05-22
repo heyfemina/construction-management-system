@@ -12,7 +12,10 @@ export const getSites = async (
         s.*,
         COALESCE(e.total_expense, 0)::numeric AS total_expense,
         COALESCE(m.material_cost, 0)::numeric AS material_cost,
-        COALESCE(l.labour_count, 0)::int AS labour_count
+        COALESCE(mc.material_count, 0)::int AS material_count,
+        COALESCE(l.labour_count, 0)::int AS labour_count,
+        COALESCE(v.vendor_count, 0)::int AS vendor_count,
+        COALESCE(ec.expense_count, 0)::int AS expense_count
       FROM sites s
       LEFT JOIN (
         SELECT site_id, SUM(amount) AS total_expense
@@ -27,11 +30,29 @@ export const getSites = async (
         GROUP BY site_id
       ) m ON m.site_id = s.id
       LEFT JOIN (
+        SELECT site_id, COUNT(*) AS material_count
+        FROM materials
+        WHERE user_id = $1
+        GROUP BY site_id
+      ) mc ON mc.site_id = s.id
+      LEFT JOIN (
         SELECT site_id, COUNT(*) AS labour_count
         FROM labours
         WHERE user_id = $1
         GROUP BY site_id
       ) l ON l.site_id = s.id
+      LEFT JOIN (
+        SELECT site_id, COUNT(DISTINCT vendor_id) AS vendor_count
+        FROM material_purchases
+        WHERE user_id = $1 AND vendor_id IS NOT NULL
+        GROUP BY site_id
+      ) v ON v.site_id = s.id
+      LEFT JOIN (
+        SELECT site_id, COUNT(*) AS expense_count
+        FROM expenses
+        WHERE user_id = $1
+        GROUP BY site_id
+      ) ec ON ec.site_id = s.id
       WHERE s.user_id = $1
       ORDER BY s.id DESC
       `,
@@ -303,6 +324,7 @@ export const getSiteReport =
               COALESCE(p.total_received, 0) -
               COALESCE(u.total_used, 0)
             )::numeric AS remaining_stock,
+            COALESCE(p.avg_unit_cost, 0)::numeric AS avg_unit_cost,
             COALESCE(p.total_cost, 0)::numeric AS total_cost,
             COALESCE(p.transport_cost, 0)::numeric AS transport_cost
           FROM materials m
@@ -310,6 +332,11 @@ export const getSiteReport =
             SELECT
               material_id,
               SUM(quantity) AS total_received,
+              CASE
+                WHEN SUM(quantity) > 0
+                  THEN SUM(quantity * unit_cost) / SUM(quantity)
+                ELSE 0
+              END AS avg_unit_cost,
               SUM(total_cost) AS total_cost,
               SUM(transport_cost) AS transport_cost
             FROM material_purchases

@@ -14,9 +14,10 @@ export const getMaterials = async (
           COALESCE(p.total_received, 0)::numeric AS total_received,
           COALESCE(u.total_used, 0)::numeric AS total_used,
           (
-            COALESCE(p.total_received, 0) -
+            COALESCE(p.total_received, 0) - 
             COALESCE(u.total_used, 0)
           )::numeric AS remaining_stock,
+          COALESCE(p.avg_unit_cost, 0)::numeric AS avg_unit_cost,
           COALESCE(p.total_cost, 0)::numeric AS total_cost,
           COALESCE(p.transport_cost, 0)::numeric AS transport_cost
         FROM materials m
@@ -25,6 +26,11 @@ export const getMaterials = async (
           SELECT
             material_id,
             SUM(quantity) AS total_received,
+            CASE
+              WHEN SUM(quantity) > 0
+                THEN SUM(quantity * unit_cost) / SUM(quantity)
+              ELSE 0
+            END AS avg_unit_cost,
             SUM(total_cost) AS total_cost,
             SUM(transport_cost) AS transport_cost
           FROM material_purchases
@@ -72,6 +78,7 @@ export const getSingleMaterial = async (req, res) => {
           COALESCE(p.total_received, 0) -
           COALESCE(u.total_used, 0)
         )::numeric AS remaining_stock,
+        COALESCE(p.avg_unit_cost, 0)::numeric AS avg_unit_cost,
         COALESCE(p.total_cost, 0)::numeric AS total_cost,
         COALESCE(p.transport_cost, 0)::numeric AS transport_cost
       FROM materials m
@@ -80,6 +87,11 @@ export const getSingleMaterial = async (req, res) => {
         SELECT
           material_id,
           SUM(quantity) AS total_received,
+          CASE
+            WHEN SUM(quantity) > 0
+              THEN SUM(quantity * unit_cost) / SUM(quantity)
+            ELSE 0
+          END AS avg_unit_cost,
           SUM(total_cost) AS total_cost,
           SUM(transport_cost) AS transport_cost
         FROM material_purchases

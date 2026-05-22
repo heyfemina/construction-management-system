@@ -13,6 +13,9 @@ function UsageForm() {
   const [sites, setSites] = useState([]);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  const selectedMaterial = materials.find(
+    (material) => String(material.id) === String(materialId)
+  );
 
   const loadOptions = () => {
     Promise.all([getMaterials(), getSites()])
@@ -41,8 +44,13 @@ function UsageForm() {
     e.preventDefault();
     setError("");
 
-    if (!materialId || Number(usedQuantity) <= 0) {
-      setError("Select material and enter used quantity.");
+    if (!materialId || !siteId || Number(usedQuantity) <= 0) {
+      setError("Select material, site and enter used quantity.");
+      return;
+    }
+
+    if (Number(usedQuantity) > Number(selectedMaterial?.remaining_stock || 0)) {
+      setError("Used quantity cannot be more than remaining stock.");
       return;
     }
 
@@ -60,6 +68,7 @@ function UsageForm() {
       setSiteId("");
       setUsedQuantity("");
       window.dispatchEvent(new Event("materials:changed"));
+      window.dispatchEvent(new Event("sites:changed"));
     } catch (err) {
       setError(err.response?.data?.message || "Could not save usage");
     } finally {
@@ -94,13 +103,23 @@ function UsageForm() {
           <select
             required
             value={materialId}
-            onChange={(e) => setMaterialId(e.target.value)}
+            onChange={(e) => {
+              const nextMaterialId = e.target.value;
+              setMaterialId(nextMaterialId);
+              const material = materials.find(
+                (item) => String(item.id) === String(nextMaterialId)
+              );
+
+              if (material?.site_id) {
+                setSiteId(String(material.site_id));
+              }
+            }}
             style={inputStyle}
           >
             <option value="">Select material</option>
             {materials.map((material) => (
               <option key={material.id} value={material.id}>
-                {material.material_name}
+                {material.material_name} ({material.site_name || "No site"})
               </option>
             ))}
           </select>
@@ -109,6 +128,7 @@ function UsageForm() {
         <div style={{ marginBottom: "15px" }}>
           <label>Site</label>
           <select
+            required
             value={siteId}
             onChange={(e) => setSiteId(e.target.value)}
             style={inputStyle}
@@ -136,6 +156,13 @@ function UsageForm() {
             style={inputStyle}
           />
         </div>
+
+        {selectedMaterial && (
+          <p style={hintStyle}>
+            Remaining stock: {selectedMaterial.remaining_stock || 0}{" "}
+            {selectedMaterial.unit || ""}
+          </p>
+        )}
 
         <button type="submit" style={buttonStyle} disabled={saving}>
           {saving ? "Saving..." : "Save Usage"}
@@ -167,6 +194,12 @@ const buttonStyle = {
 const errorStyle = {
   color: "#dc2626",
   marginBottom: "12px",
+  fontWeight: "600",
+};
+
+const hintStyle = {
+  margin: "-6px 0 15px",
+  color: "#6b7280",
   fontWeight: "600",
 };
 
