@@ -19,36 +19,39 @@ function ExpenseChart({ data = [] }) {
         <span style={pillStyle}>Cost</span>
       </div>
 
-      <ResponsiveContainer width="100%" height={280}>
-        <BarChart data={data} barSize={34}>
-          <CartesianGrid stroke="var(--border)" vertical={false} />
-          <XAxis
-            dataKey="month"
-            axisLine={false}
-            tickLine={false}
-            tick={{ fill: "var(--text-muted)" }}
-          />
-          <YAxis
-            axisLine={false}
-            tickLine={false}
-            tick={{ fill: "var(--text-muted)" }}
-          />
-          <Tooltip
-            cursor={{ fill: "var(--surface-subtle)" }}
-            contentStyle={tooltipStyle}
-            labelStyle={tooltipLabelStyle}
-          />
-          <Bar dataKey="expense" fill="#2563eb" radius={[8, 8, 0, 0]} />
-        </BarChart>
-      </ResponsiveContainer>
-      {data.length === 0 && <p style={emptyStyle}>No expense records yet</p>}
+      <div style={chartShellStyle}>
+        <ResponsiveContainer width="100%" height={180}>
+          <BarChart data={data} barSize={28}>
+            <CartesianGrid stroke="var(--border)" vertical={false} />
+            <XAxis
+              dataKey="month"
+              axisLine={false}
+              tickLine={false}
+              tick={{ fill: "var(--text-muted)", fontSize: 12 }}
+            />
+            <YAxis
+              axisLine={false}
+              tickLine={false}
+              tick={{ fill: "var(--text-muted)", fontSize: 12 }}
+              width={48}
+            />
+            <Tooltip
+              cursor={{ fill: "var(--surface-subtle)" }}
+              contentStyle={tooltipStyle}
+              labelStyle={tooltipLabelStyle}
+            />
+            <Bar dataKey="expense" fill="#2563eb" radius={[8, 8, 0, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+        {data.length === 0 && <p style={emptyStyle}>No expense records yet</p>}
+      </div>
     </div>
   );
 }
 
 const cardStyle = {
   backgroundColor: "var(--surface)",
-  padding: "22px",
+  padding: "14px",
   borderRadius: "8px",
   border: "1px solid var(--border)",
   boxShadow: "var(--shadow-sm)",
@@ -59,7 +62,7 @@ const headerStyle = {
   justifyContent: "space-between",
   alignItems: "flex-start",
   gap: "14px",
-  marginBottom: "18px",
+  marginBottom: "6px",
 };
 
 const labelStyle = {
@@ -72,12 +75,12 @@ const labelStyle = {
 
 const titleStyle = {
   margin: 0,
-  fontSize: "21px",
+  fontSize: "18px",
   color: "var(--heading)",
 };
 
 const pillStyle = {
-  padding: "6px 10px",
+  padding: "5px 9px",
   borderRadius: "999px",
   backgroundColor: "var(--surface-subtle)",
   color: "#1d4ed8",
@@ -96,11 +99,22 @@ const tooltipLabelStyle = {
   color: "var(--heading)",
 };
 
+const chartShellStyle = {
+  position: "relative",
+  minHeight: "180px",
+};
+
 const emptyStyle = {
-  margin: "-155px 0 130px",
+  position: "absolute",
+  inset: "0",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  margin: 0,
   textAlign: "center",
   color: "var(--text-muted)",
   fontWeight: "700",
+  pointerEvents: "none",
 };
 
 export default ExpenseChart;

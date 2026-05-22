@@ -19,42 +19,45 @@ function MaterialChart({ data = [] }) {
         <span style={pillStyle}>Inventory</span>
       </div>
 
-      <ResponsiveContainer width="100%" height={280}>
-        <LineChart data={data}>
-          <CartesianGrid stroke="var(--border)" vertical={false} />
-          <XAxis
-            dataKey="month"
-            axisLine={false}
-            tickLine={false}
-            tick={{ fill: "var(--text-muted)" }}
-          />
-          <YAxis
-            axisLine={false}
-            tickLine={false}
-            tick={{ fill: "var(--text-muted)" }}
-          />
-          <Tooltip
-            contentStyle={tooltipStyle}
-            labelStyle={tooltipLabelStyle}
-          />
-          <Line
-            type="monotone"
-            dataKey="materials"
-            stroke="#059669"
-            strokeWidth={3}
-            dot={{ r: 4, fill: "#059669", strokeWidth: 0 }}
-            activeDot={{ r: 6 }}
-          />
-        </LineChart>
-      </ResponsiveContainer>
-      {data.length === 0 && <p style={emptyStyle}>No material purchases yet</p>}
+      <div style={chartShellStyle}>
+        <ResponsiveContainer width="100%" height={180}>
+          <LineChart data={data}>
+            <CartesianGrid stroke="var(--border)" vertical={false} />
+            <XAxis
+              dataKey="month"
+              axisLine={false}
+              tickLine={false}
+              tick={{ fill: "var(--text-muted)", fontSize: 12 }}
+            />
+            <YAxis
+              axisLine={false}
+              tickLine={false}
+              tick={{ fill: "var(--text-muted)", fontSize: 12 }}
+              width={48}
+            />
+            <Tooltip
+              contentStyle={tooltipStyle}
+              labelStyle={tooltipLabelStyle}
+            />
+            <Line
+              type="monotone"
+              dataKey="materials"
+              stroke="#059669"
+              strokeWidth={3}
+              dot={{ r: 4, fill: "#059669", strokeWidth: 0 }}
+              activeDot={{ r: 6 }}
+            />
+          </LineChart>
+        </ResponsiveContainer>
+        {data.length === 0 && <p style={emptyStyle}>No material purchases yet</p>}
+      </div>
     </div>
   );
 }
 
 const cardStyle = {
   backgroundColor: "var(--surface)",
-  padding: "22px",
+  padding: "14px",
   borderRadius: "8px",
   border: "1px solid var(--border)",
   boxShadow: "var(--shadow-sm)",
@@ -65,7 +68,7 @@ const headerStyle = {
   justifyContent: "space-between",
   alignItems: "flex-start",
   gap: "14px",
-  marginBottom: "18px",
+  marginBottom: "6px",
 };
 
 const labelStyle = {
@@ -78,12 +81,12 @@ const labelStyle = {
 
 const titleStyle = {
   margin: 0,
-  fontSize: "21px",
+  fontSize: "18px",
   color: "var(--heading)",
 };
 
 const pillStyle = {
-  padding: "6px 10px",
+  padding: "5px 9px",
   borderRadius: "999px",
   backgroundColor: "var(--accent-soft)",
   color: "var(--accent-strong)",
@@ -102,11 +105,22 @@ const tooltipLabelStyle = {
   color: "var(--heading)",
 };
 
+const chartShellStyle = {
+  position: "relative",
+  minHeight: "180px",
+};
+
 const emptyStyle = {
-  margin: "-155px 0 130px",
+  position: "absolute",
+  inset: "0",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  margin: 0,
   textAlign: "center",
   color: "var(--text-muted)",
   fontWeight: "700",
+  pointerEvents: "none",
 };
 
 export default MaterialChart;

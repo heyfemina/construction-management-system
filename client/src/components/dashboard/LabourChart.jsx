@@ -12,6 +12,9 @@ function LabourChart({ paid = 0, pending = 0 }) {
     { name: "Pending", value: Number(pending || 0), color: "#be123c" },
   ];
   const hasData = data.some((item) => item.value > 0);
+  const chartData = hasData
+    ? data
+    : [{ name: "No payment data", value: 1, color: "var(--surface-subtle)" }];
 
   return (
     <div style={cardStyle}>
@@ -26,20 +29,18 @@ function LabourChart({ paid = 0, pending = 0 }) {
         <ResponsiveContainer width="100%" height={260}>
           <PieChart>
             <Pie
-              data={hasData ? data : [{ name: "No data", value: 1, color: "#e5e7eb" }]}
+              data={chartData}
               dataKey="value"
               innerRadius={64}
               outerRadius={100}
               paddingAngle={4}
+              isAnimationActive={hasData}
             >
-              {(hasData ? data : [{ name: "No data", value: 1, color: "#e5e7eb" }]).map((entry) => (
+              {chartData.map((entry) => (
                 <Cell key={entry.name} fill={entry.color} />
               ))}
             </Pie>
-            <Tooltip
-              contentStyle={tooltipStyle}
-              labelStyle={tooltipLabelStyle}
-            />
+            {hasData && <Tooltip content={<LabourTooltip />} />}
           </PieChart>
         </ResponsiveContainer>
 
@@ -53,6 +54,23 @@ function LabourChart({ paid = 0, pending = 0 }) {
           ))}
         </div>
       </div>
+    </div>
+  );
+}
+
+function LabourTooltip({ active, payload }) {
+  if (!active || !payload?.length) {
+    return null;
+  }
+
+  const item = payload[0];
+
+  return (
+    <div style={tooltipStyle}>
+      <p style={tooltipLabelStyle}>{item.name}</p>
+      <strong style={tooltipValueStyle}>
+        Rs. {Number(item.value || 0).toLocaleString("en-IN")}
+      </strong>
     </div>
   );
 }
@@ -122,10 +140,19 @@ const tooltipStyle = {
   border: "1px solid var(--border)",
   borderRadius: "8px",
   color: "var(--text)",
+  padding: "10px 12px",
+  boxShadow: "var(--shadow-sm)",
 };
 
 const tooltipLabelStyle = {
+  margin: "0 0 4px",
   color: "var(--heading)",
+  fontWeight: "800",
+};
+
+const tooltipValueStyle = {
+  color: "var(--text)",
+  fontWeight: "850",
 };
 
 export default LabourChart;
