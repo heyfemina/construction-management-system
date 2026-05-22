@@ -7,6 +7,7 @@ function WageForm() {
   const [rate, setRate] = useState("");
   const [labours, setLabours] = useState([]);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
 
   const total = Number(days || 0) * Number(rate || 0);
   const selectedLabour = labours.find(
@@ -30,6 +31,13 @@ function WageForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+
+    if (!labourId || Number(days) <= 0 || Number(rate) <= 0) {
+      setError("Select labour and enter valid days plus daily rate.");
+      return;
+    }
+
     setSaving(true);
 
     try {
@@ -45,6 +53,8 @@ function WageForm() {
       setDays("");
       setRate("");
       window.dispatchEvent(new Event("labours:changed"));
+    } catch (err) {
+      setError(err.response?.data?.message || "Could not generate wage");
     } finally {
       setSaving(false);
     }
@@ -66,10 +76,17 @@ function WageForm() {
           marginBottom: "20px",
         }}
       >
-        Wage Management
+        Generate Wage (Amount Earned)
       </h2>
 
+      <p style={helperStyle}>
+        This creates the labour's earned wage. It does not mark the labour as
+        paid.
+      </p>
+
       <form onSubmit={handleSubmit}>
+        {error && <p style={errorStyle}>{error}</p>}
+
         <div style={{ marginBottom: "15px" }}>
           <label>Labour</label>
           <select
@@ -140,7 +157,7 @@ function WageForm() {
         </div>
 
         <button type="submit" style={buttonStyle} disabled={saving}>
-          {saving ? "Saving..." : "Save Wage"}
+          {saving ? "Saving..." : "Generate Wage"}
         </button>
       </form>
     </div>
@@ -163,6 +180,18 @@ const buttonStyle = {
   border: "none",
   borderRadius: "8px",
   cursor: "pointer",
+  fontWeight: "600",
+};
+
+const helperStyle = {
+  color: "#6b7280",
+  fontWeight: "600",
+  margin: "-8px 0 18px",
+};
+
+const errorStyle = {
+  color: "#dc2626",
+  marginBottom: "12px",
   fontWeight: "600",
 };
 

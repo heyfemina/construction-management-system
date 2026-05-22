@@ -12,6 +12,9 @@ function LabourPaymentForm() {
   const [labours, setLabours] = useState([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const selectedLabour = labours.find(
+    (labour) => String(labour.id) === String(labourId)
+  );
 
   const loadLabours = () => {
     getLabours()
@@ -30,15 +33,27 @@ function LabourPaymentForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setSaving(true);
     setError("");
+
+    if (!labourId || Number(amount) <= 0) {
+      setError("Select labour and enter payment amount.");
+      return;
+    }
+
+    if (Number(amount) > Number(selectedLabour?.pending_amount || 0)) {
+      setError("Payment amount cannot be more than pending wage.");
+      return;
+    }
+
+    setSaving(true);
 
     try {
       await createLabourPayment({
         labour_id: labourId || null,
-        total_amount: amount,
+        total_amount: selectedLabour?.total_wage || amount,
         paid_amount: amount,
-        pending_amount: 0,
+        pending_amount:
+          Number(selectedLabour?.pending_amount || 0) - Number(amount || 0),
         payment_date: new Date().toISOString().slice(0, 10),
         payment_method: method,
         recipient_email: recipientEmail,
@@ -58,7 +73,12 @@ function LabourPaymentForm() {
 
   return (
     <div style={cardStyle}>
-      <h2 style={headingStyle}>Labour Payment</h2>
+      <h2 style={headingStyle}>Record Labour Payment (Amount Paid)</h2>
+
+      <p style={helperStyle}>
+        This records actual money paid to labour and reduces pending wage
+        balance.
+      </p>
 
       <form onSubmit={handleSubmit}>
         {error && <p style={errorStyle}>{error}</p>}
@@ -68,7 +88,15 @@ function LabourPaymentForm() {
           <select
             required
             value={labourId}
-            onChange={(e) => setLabourId(e.target.value)}
+            onChange={(e) => {
+              const nextLabourId = e.target.value;
+              const labour = labours.find(
+                (item) => String(item.id) === String(nextLabourId)
+              );
+
+              setLabourId(nextLabourId);
+              setRecipientEmail(labour?.email || "");
+            }}
             style={inputStyle}
           >
             <option value="">Select labour</option>
@@ -79,6 +107,14 @@ function LabourPaymentForm() {
             ))}
           </select>
         </div>
+
+        {selectedLabour && (
+          <p style={balanceStyle}>
+            Total wage: Rs. {selectedLabour.total_wage || 0} | Paid: Rs.{" "}
+            {selectedLabour.paid_amount || 0} | Pending wage: Rs.{" "}
+            {selectedLabour.pending_amount || 0}
+          </p>
+        )}
 
         <div style={{ marginBottom: "15px" }}>
           <label>Labour Email</label>
@@ -92,7 +128,7 @@ function LabourPaymentForm() {
         </div>
 
         <div style={{ marginBottom: "15px" }}>
-          <label>Payment Amount</label>
+          <label>Paid Amount</label>
           <input
             type="number"
             required
@@ -100,7 +136,7 @@ function LabourPaymentForm() {
             step="0.01"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
-            placeholder="Enter payment amount"
+            placeholder="Enter paid amount"
             style={inputStyle}
           />
         </div>
@@ -117,7 +153,7 @@ function LabourPaymentForm() {
         </div>
 
         <button type="submit" style={buttonStyle} disabled={saving}>
-          {saving ? "Saving..." : "Save Payment"}
+          {saving ? "Saving..." : "Record Payment"}
         </button>
       </form>
     </div>
@@ -159,6 +195,18 @@ const buttonStyle = {
 const errorStyle = {
   color: "#dc2626",
   marginBottom: "12px",
+  fontWeight: "600",
+};
+
+const helperStyle = {
+  color: "#6b7280",
+  fontWeight: "600",
+  margin: "-8px 0 18px",
+};
+
+const balanceStyle = {
+  margin: "-6px 0 15px",
+  color: "#6b7280",
   fontWeight: "600",
 };
 
