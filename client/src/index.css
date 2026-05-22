@@ -3,10 +3,10 @@
 :root {
   color-scheme: light;
   --bg: #eef3f8;
-  --bg-soft: #f7fafc;
+  --bg-soft: #f8fafc;
   --surface: #ffffff;
   --surface-raised: #ffffff;
-  --surface-subtle: #f3f6fa;
+  --surface-subtle: #f5f7fb;
   --text: #111827;
   --text-muted: #667085;
   --heading: #0b1220;
@@ -18,14 +18,17 @@
   --warning: #d97706;
   --danger: #dc2626;
   --success: #16a34a;
+  --info: #2563eb;
+  --purple: #7c3aed;
   --sidebar-bg: #0f172a;
   --sidebar-panel: #162033;
   --sidebar-text: #f8fafc;
   --sidebar-muted: #94a3b8;
   --sidebar-active: #1e293b;
   --sidebar-active-text: #ffffff;
-  --shadow-sm: 0 10px 28px rgba(15, 23, 42, 0.08);
-  --shadow-md: 0 18px 60px rgba(15, 23, 42, 0.12);
+  --shadow-sm: 0 12px 30px rgba(15, 23, 42, 0.07);
+  --shadow-md: 0 20px 58px rgba(15, 23, 42, 0.12);
+  --shadow-focus: 0 0 0 4px color-mix(in srgb, var(--accent) 16%, transparent);
   --radius: 8px;
 }
 
@@ -47,6 +50,8 @@
   --warning: #f59e0b;
   --danger: #f87171;
   --success: #22c55e;
+  --info: #60a5fa;
+  --purple: #a78bfa;
   --sidebar-bg: #070f1c;
   --sidebar-panel: #0e1b2f;
   --sidebar-text: #f8fafc;
@@ -55,6 +60,7 @@
   --sidebar-active-text: #ffffff;
   --shadow-sm: 0 10px 30px rgba(0, 0, 0, 0.22);
   --shadow-md: 0 20px 70px rgba(0, 0, 0, 0.32);
+  --shadow-focus: 0 0 0 4px rgba(45, 212, 191, 0.16);
 }
 
 * {
@@ -71,9 +77,12 @@ body {
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
     "Segoe UI", sans-serif;
   background:
-    radial-gradient(circle at top left, rgba(15, 118, 110, 0.08), transparent 34rem),
+    radial-gradient(circle at top left, rgba(15, 118, 110, 0.1), transparent 30rem),
+    radial-gradient(circle at top right, rgba(37, 99, 235, 0.08), transparent 28rem),
     var(--bg);
   color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 button,
@@ -132,7 +141,9 @@ a {
   width: 284px;
   min-height: 100vh;
   flex: 0 0 284px;
-  background: var(--sidebar-bg);
+  background:
+    linear-gradient(180deg, rgba(37, 99, 235, 0.08), transparent 22rem),
+    var(--sidebar-bg);
   color: var(--sidebar-text);
   display: flex;
   flex-direction: column;
@@ -163,7 +174,7 @@ a {
   width: 40px;
   height: 40px;
   border-radius: var(--radius);
-  background: #1e293b;
+  background: linear-gradient(135deg, var(--accent), #2563eb);
   color: #f8fafc;
   border: 1px solid rgba(148, 163, 184, 0.28);
   display: flex;
@@ -228,10 +239,10 @@ a {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 11px;
+  padding: 10px 12px;
   margin-bottom: 4px;
   border-radius: var(--radius);
-  color: #cbd5e1;
+  color: #d5deea;
   text-decoration: none;
   font-size: 14px;
   font-weight: 680;
@@ -248,13 +259,13 @@ a {
 }
 
 .sidebar-link:hover {
-  background: rgba(148, 163, 184, 0.1);
+  background: rgba(148, 163, 184, 0.13);
   color: #ffffff;
   border-color: rgba(148, 163, 184, 0.14);
 }
 
 .sidebar-link.active {
-  background: var(--sidebar-active);
+  background: linear-gradient(90deg, var(--sidebar-active), rgba(30, 41, 59, 0.72));
   color: var(--sidebar-active-text);
   border-color: rgba(148, 163, 184, 0.2);
   box-shadow: inset 3px 0 0 var(--accent);
@@ -310,7 +321,7 @@ a {
 .topbar {
   min-height: 76px;
   padding: 14px 26px;
-  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  background: color-mix(in srgb, var(--surface) 90%, transparent);
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
@@ -320,7 +331,7 @@ a {
   top: 0;
   z-index: 20;
   backdrop-filter: blur(14px);
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
 }
 
 .topbar-left,
@@ -548,8 +559,20 @@ a {
   padding: 22px;
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  background: var(--surface);
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--accent-soft) 48%, transparent), transparent 48%),
+    var(--surface);
   box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+.page-header::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: linear-gradient(180deg, var(--accent), var(--info));
 }
 
 .page-header-label {
@@ -824,42 +847,6 @@ a {
   color: var(--text);
 }
 
-.app-main :where(table) {
-  width: 100%;
-  background: var(--surface);
-  color: var(--text);
-}
-
-.app-main :where(th) {
-  background: var(--surface-subtle) !important;
-  color: var(--heading) !important;
-  border-color: var(--border) !important;
-}
-
-.app-main :where(td) {
-  color: var(--text) !important;
-  border-color: var(--border) !important;
-}
-
-.app-main :where(input, textarea, select) {
-  background: var(--surface-subtle) !important;
-  color: var(--text) !important;
-  border-color: var(--border) !important;
-}
-
-.app-main :where(input, textarea, select)::placeholder {
-  color: var(--text-muted) !important;
-  opacity: 1;
-}
-
-.app-main :where(label) {
-  color: var(--text);
-}
-
-.app-main :where(h1, h2, h3, h4, h5, h6) {
-  color: var(--heading);
-}
-
 .app-main :where(
   [style*="background: white"],
   [style*="background:#fff"],
@@ -867,7 +854,12 @@ a {
   [style*="background-color: rgb(255, 255, 255)"],
   [style*="background-color: #ffffff"]
 ) {
-  background: var(--surface) !important;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--surface-raised) 96%, transparent), var(--surface)),
+    var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius) !important;
+  box-shadow: var(--shadow-sm) !important;
 }
 
 .app-main :where(
@@ -877,6 +869,359 @@ a {
   [style*="background-color: #f3f4f6"]
 ) {
   background: var(--surface-subtle) !important;
+  border-color: var(--border) !important;
+  border-radius: var(--radius) !important;
+}
+
+.app-main :where(form) {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.app-main :where(label) {
+  color: var(--heading);
+  font-size: 13px;
+  font-weight: 760;
+}
+
+.app-main :where(input, textarea, select) {
+  width: 100%;
+  min-height: 44px;
+  background: var(--surface-subtle) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius) !important;
+  padding: 11px 13px !important;
+  outline: 0;
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    transform 0.18s ease;
+}
+
+.app-main :where(textarea) {
+  min-height: 96px;
+  line-height: 1.5;
+}
+
+.app-main :where(input, textarea, select):focus {
+  background: var(--surface) !important;
+  border-color: var(--accent) !important;
+  box-shadow: var(--shadow-focus) !important;
+}
+
+.app-main :where(input, textarea, select)::placeholder {
+  color: var(--text-muted) !important;
+  opacity: 0.82;
+}
+
+.app-main :where(button, a[role="button"]) {
+  border-radius: var(--radius) !important;
+  border: 1px solid var(--border) !important;
+  background: var(--surface-raised);
+  color: var(--text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 10px 15px !important;
+  font-weight: 820 !important;
+  line-height: 1.1;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    background 0.18s ease,
+    border-color 0.18s ease,
+    opacity 0.18s ease;
+}
+
+.app-main :where(button:not(:disabled), a[role="button"]):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
+}
+
+.app-main :where(button:disabled) {
+  cursor: not-allowed;
+  opacity: 0.62;
+  box-shadow: none;
+}
+
+.app-main :where(
+  button[style*="background-color: rgb(37, 99, 235)"],
+  button[style*="background-color: #2563eb"],
+  button[style*="backgroundColor: #2563eb"],
+  a[role="button"][style*="background-color: rgb(37, 99, 235)"],
+  a[role="button"][style*="background-color: #2563eb"]
+) {
+  background: linear-gradient(135deg, #2563eb, #0f766e) !important;
+  color: #ffffff !important;
+}
+
+.app-main :where(
+  button[style*="background-color: rgb(5, 150, 105)"],
+  button[style*="background-color: #059669"],
+  button[style*="backgroundColor: #059669"]
+) {
+  background: linear-gradient(135deg, #059669, #0f766e) !important;
+  color: #ffffff !important;
+}
+
+.app-main :where(
+  button[style*="background-color: rgb(124, 58, 237)"],
+  button[style*="background-color: #7c3aed"],
+  button[style*="backgroundColor: #7c3aed"]
+) {
+  background: linear-gradient(135deg, #7c3aed, #2563eb) !important;
+  color: #ffffff !important;
+}
+
+.app-main :where(
+  button[style*="background-color: rgb(220, 38, 38)"],
+  button[style*="background-color: #dc2626"],
+  button[style*="backgroundColor: #dc2626"]
+) {
+  background: linear-gradient(135deg, #dc2626, #b91c1c) !important;
+  color: #ffffff !important;
+}
+
+.app-main :where(
+  button[style*="background-color: rgb(107, 114, 128)"],
+  button[style*="background-color: #6b7280"],
+  button[style*="backgroundColor: #6b7280"]
+) {
+  background: var(--surface-subtle) !important;
+  border-color: var(--border-strong) !important;
+  color: var(--text) !important;
+}
+
+.app-main :where(table) {
+  width: 100%;
+  border-collapse: separate !important;
+  border-spacing: 0;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.table-card,
+.report-table-card {
+  width: 100%;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--surface-raised) 96%, transparent), var(--surface)),
+    var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+
+.table-scroll,
+.report-table-scroll {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-color: var(--border-strong) transparent;
+}
+
+.report-table-card {
+  padding: 0;
+  overflow: hidden;
+}
+
+.report-table-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--border);
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--accent-soft) 58%, transparent), transparent 56%),
+    var(--surface);
+}
+
+.report-table-eyebrow {
+  margin: 0 0 4px;
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.report-table-header h2 {
+  margin: 0;
+  color: var(--heading);
+  font-size: 22px;
+  line-height: 1.2;
+  font-weight: 850;
+}
+
+.report-table-count {
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 11px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-subtle);
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.professional-table {
+  min-width: 760px;
+}
+
+.app-main :where(th) {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--surface-subtle) 88%, var(--surface)), var(--surface-subtle)) !important;
+  color: var(--heading) !important;
+  border-color: var(--border) !important;
+  font-size: 12px;
+  font-weight: 850;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  text-align: left;
+  padding: 13px 14px !important;
+  border-bottom: 1px solid var(--border) !important;
+}
+
+.app-main :where(td) {
+  color: var(--text) !important;
+  border-color: var(--border) !important;
+  font-size: 13px;
+  line-height: 1.45;
+  padding: 13px 14px !important;
+  border-bottom: 1px solid var(--border) !important;
+}
+
+.app-main :where(tbody tr) {
+  transition:
+    background 0.16s ease,
+    transform 0.16s ease;
+}
+
+.app-main :where(tbody tr:nth-child(even)) {
+  background: color-mix(in srgb, var(--surface-subtle) 46%, transparent);
+}
+
+.app-main :where(tbody tr:hover) {
+  background: color-mix(in srgb, var(--accent-soft) 56%, transparent);
+}
+
+.app-main :where(tbody tr:last-child td) {
+  border-bottom: 0 !important;
+}
+
+.app-main :where(td:last-child) {
+  white-space: nowrap;
+}
+
+.app-main :where(td:last-child button) {
+  min-height: 34px;
+  padding: 7px 10px !important;
+  margin: 2px 4px 2px 0;
+  font-size: 12px;
+  box-shadow: none;
+}
+
+.app-main :where(td:last-child a) {
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 7px 10px;
+  margin: 2px 4px 2px 0 !important;
+  border: 1px solid color-mix(in srgb, var(--info) 24%, var(--border));
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--info) 10%, transparent);
+  color: var(--info) !important;
+  font-size: 12px;
+  font-weight: 850 !important;
+  line-height: 1.1;
+  text-decoration: none !important;
+}
+
+.app-main :where(td:last-child a:hover) {
+  background: color-mix(in srgb, var(--info) 16%, transparent);
+}
+
+.app-main :where(.is-money, .is-number) {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.app-main :where(.is-date) {
+  white-space: nowrap;
+}
+
+.cell-money {
+  color: var(--heading);
+  font-weight: 820;
+  font-variant-numeric: tabular-nums;
+}
+
+.cell-muted {
+  color: var(--text-muted);
+}
+
+.cell-status {
+  display: inline-flex;
+  min-height: 26px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 9px;
+  border: 1px solid color-mix(in srgb, var(--success) 34%, transparent);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--success) 12%, transparent);
+  color: var(--success);
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.report-table-state {
+  height: 96px;
+  text-align: center;
+  color: var(--text-muted) !important;
+  font-weight: 760;
+  background: var(--surface) !important;
+}
+
+.report-table-state-error {
+  color: var(--danger) !important;
+  background: color-mix(in srgb, var(--danger) 8%, var(--surface)) !important;
+}
+
+.export-button {
+  min-width: 132px;
+}
+
+.export-button-pdf {
+  background: linear-gradient(135deg, #dc2626, #b91c1c) !important;
+}
+
+.export-button-excel {
+  background: linear-gradient(135deg, #059669, #0f766e) !important;
+}
+
+.app-main :where(h1, h2, h3, h4, h5, h6) {
+  color: var(--heading);
+}
+
+.app-main :where(h2, h3) {
+  margin-top: 0;
 }
 
 :root[data-theme="dark"] .app-main :where(
@@ -960,6 +1305,13 @@ a {
   [style*="display:flex"]
 ) {
   min-width: 0;
+}
+
+.app-main :where(
+  [style*="display: flex"][style*="gap"],
+  [style*="display:flex"][style*="gap"]
+) {
+  flex-wrap: wrap;
 }
 
 .app-main :where(

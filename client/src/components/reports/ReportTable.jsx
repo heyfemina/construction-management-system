@@ -5,97 +5,145 @@ function ReportTable({
   loading = false,
   error = "",
 }) {
+  const visibleCount = loading || error ? 0 : data.length;
+
   return (
-    <div
-      style={{
-        backgroundColor: "#ffffff",
-        padding: "20px",
-        borderRadius: "12px",
-        overflowX: "auto",
-      }}
-    >
-      <h2
-        style={{
-          fontSize: "24px",
-          fontWeight: "700",
-          marginBottom: "20px",
-        }}
-      >
-        {title}
-      </h2>
+    <section className="report-table-card">
+      <div className="report-table-header">
+        <div>
+          <p className="report-table-eyebrow">Report Table</p>
+          <h2>{title}</h2>
+        </div>
+        <span className="report-table-count">
+          {visibleCount} {visibleCount === 1 ? "record" : "records"}
+        </span>
+      </div>
 
-      <table
-        style={{
-          width: "100%",
-          borderCollapse: "collapse",
-        }}
-      >
-        <thead>
-          <tr>
-            {columns.map((column) => (
-              <th key={column.key} style={tableHead}>
-                {column.label}
-              </th>
-            ))}
-          </tr>
-        </thead>
-
-        <tbody>
-          {!loading && error && (
+      <div className="report-table-scroll">
+        <table className="professional-table report-table">
+          <thead>
             <tr>
-              <td style={errorData} colSpan={columns.length}>
-                {error}
-              </td>
-            </tr>
-          )}
-
-          {loading && (
-            <tr>
-              <td style={tableData} colSpan={columns.length}>
-                Loading reports...
-              </td>
-            </tr>
-          )}
-
-          {!loading && !error && data.length === 0 && (
-            <tr>
-              <td style={tableData} colSpan={columns.length}>
-                No records found
-              </td>
-            </tr>
-          )}
-
-          {!loading && data.map((item, index) => (
-            <tr key={item.id || index}>
               {columns.map((column) => (
-                <td key={column.key} style={tableData}>
-                  {item[column.key] ?? "-"}
-                </td>
+                <th key={column.key} className={getColumnClass(column)}>
+                  {column.label}
+                </th>
               ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+
+          <tbody>
+            {!loading && error && (
+              <StateRow
+                type="error"
+                colSpan={columns.length}
+                text={error}
+              />
+            )}
+
+            {loading && (
+              <StateRow
+                colSpan={columns.length}
+                text="Loading reports..."
+              />
+            )}
+
+            {!loading && !error && data.length === 0 && (
+              <StateRow
+                colSpan={columns.length}
+                text="No records found"
+              />
+            )}
+
+            {!loading && data.map((item, index) => (
+              <tr key={item.id || index}>
+                {columns.map((column) => (
+                  <td key={column.key} className={getColumnClass(column)}>
+                    {formatCell(item[column.key], column)}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
   );
 }
 
-const tableHead = {
-  borderBottom: "1px solid #d1d5db",
-  padding: "12px",
-  textAlign: "left",
-  backgroundColor: "#f3f4f6",
-};
+function StateRow({ colSpan, text, type = "empty" }) {
+  return (
+    <tr>
+      <td className={`report-table-state report-table-state-${type}`} colSpan={colSpan}>
+        {text}
+      </td>
+    </tr>
+  );
+}
 
-const tableData = {
-  borderBottom: "1px solid #e5e7eb",
-  padding: "12px",
-};
+function getColumnClass(column) {
+  const key = column.key.toLowerCase();
+  const label = column.label.toLowerCase();
+  const classes = [];
 
-const errorData = {
-  ...tableData,
-  color: "#dc2626",
-  fontWeight: "600",
-};
+  if (
+    key.includes("amount") ||
+    key.includes("cost") ||
+    key.includes("wage") ||
+    key.includes("purchase") ||
+    key.includes("paid") ||
+    key.includes("pending") ||
+    label.includes("cost") ||
+    label.includes("paid") ||
+    label.includes("pending") ||
+    label.includes("total")
+  ) {
+    classes.push("is-money");
+  }
+
+  if (
+    key.includes("count") ||
+    key.includes("received") ||
+    key.includes("used") ||
+    key.includes("remaining") ||
+    label.includes("attendance") ||
+    label.includes("labours")
+  ) {
+    classes.push("is-number");
+  }
+
+  if (
+    key.includes("date") ||
+    key.includes("_at") ||
+    label.includes("date") ||
+    label.includes("marked")
+  ) {
+    classes.push("is-date");
+  }
+
+  if (key.includes("status") || label.includes("status")) {
+    classes.push("is-status");
+  }
+
+  return classes.join(" ");
+}
+
+function formatCell(value, column) {
+  if (value === null || value === undefined || value === "") {
+    return <span className="cell-muted">-</span>;
+  }
+
+  const key = column.key.toLowerCase();
+  const text = String(value);
+
+  if (key.includes("status")) {
+    return <span className="cell-status">{text}</span>;
+  }
+
+  if (text.startsWith("Rs.")) {
+    return <span className="cell-money">{text}</span>;
+  }
+
+  return text;
+}
 
 export default ReportTable;

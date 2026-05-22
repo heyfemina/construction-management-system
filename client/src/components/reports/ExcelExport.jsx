@@ -11,6 +11,7 @@ function ExcelExport({
 
   return (
     <button
+      className="export-button export-button-excel"
       onClick={handleExport}
       style={{
         backgroundColor: "#059669",

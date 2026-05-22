@@ -11,6 +11,7 @@ function PDFExport({
 
   return (
     <button
+      className="export-button export-button-pdf"
       onClick={handleExport}
       style={{
         backgroundColor: "#dc2626",

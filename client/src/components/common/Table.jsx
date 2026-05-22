@@ -1,17 +1,10 @@
 function Table({ columns, data }) {
   return (
-    <div
-      style={{
-        overflowX: "auto",
-        backgroundColor: "#ffffff",
-        borderRadius: "10px",
-        padding: "10px",
-      }}
-    >
+    <div className="table-card table-scroll">
       <table
+        className="professional-table"
         style={{
           width: "100%",
-          borderCollapse: "collapse",
         }}
       >
         <thead>
@@ -19,12 +12,6 @@ function Table({ columns, data }) {
             {columns.map((column, index) => (
               <th
                 key={index}
-                style={{
-                  textAlign: "left",
-                  padding: "12px",
-                  borderBottom: "1px solid #e5e7eb",
-                  backgroundColor: "#f3f4f6",
-                }}
               >
                 {column}
               </th>
@@ -38,10 +25,6 @@ function Table({ columns, data }) {
               {row.map((item, colIndex) => (
                 <td
                   key={colIndex}
-                  style={{
-                    padding: "12px",
-                    borderBottom: "1px solid #e5e7eb",
-                  }}
                 >
                   {item}
                 </td>
