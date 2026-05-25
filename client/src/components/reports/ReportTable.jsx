@@ -1,3 +1,6 @@
+import Pagination from "../common/Pagination";
+import usePagination from "../../hooks/usePagination";
+
 function ReportTable({
   title = "Reports List",
   data = [],
@@ -6,6 +9,8 @@ function ReportTable({
   error = "",
 }) {
   const visibleCount = loading || error ? 0 : data.length;
+  const pagination = usePagination(data, 10);
+  const rows = loading || error ? [] : pagination.currentData;
 
   return (
     <section className="report-table-card">
@@ -54,7 +59,7 @@ function ReportTable({
               />
             )}
 
-            {!loading && data.map((item, index) => (
+            {!loading && rows.map((item, index) => (
               <tr key={item.id || index}>
                 {columns.map((column) => (
                   <td key={column.key} className={getColumnClass(column)}>
@@ -66,6 +71,15 @@ function ReportTable({
           </tbody>
         </table>
       </div>
+      <Pagination
+        currentPage={pagination.currentPage}
+        totalPages={pagination.totalPages}
+        onNext={pagination.nextPage}
+        onPrevious={pagination.prevPage}
+        totalItems={data.length}
+        startIndex={pagination.startIndex}
+        endIndex={pagination.endIndex}
+      />
     </section>
   );
 }

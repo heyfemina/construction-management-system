@@ -1,12 +1,20 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { deleteSite, getSites } from "../../services/siteService";
+import ConfirmDialog from "../common/ConfirmDialog";
+import ErrorDialog from "../common/ErrorDialog";
+import Modal from "../common/Modal";
+import Pagination from "../common/Pagination";
+import usePagination from "../../hooks/usePagination";
 import isConnectionError from "../../utils/isConnectionError";
 
 function SiteTable() {
   const [sites, setSites] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [dialogError, setDialogError] = useState("");
+  const pagination = usePagination(sites, 10);
 
   const loadSites = async () => {
     try {
@@ -36,9 +44,17 @@ function SiteTable() {
     };
   }, []);
 
-  const handleDelete = async (id) => {
-    await deleteSite(id);
-    loadSites();
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+
+    try {
+      await deleteSite(deleteTarget.id);
+      setDeleteTarget(null);
+      loadSites();
+    } catch (err) {
+      setDeleteTarget(null);
+      setDialogError(err.response?.data?.message || "Could not delete site");
+    }
   };
 
   const handleEdit = (site) => {
@@ -77,7 +93,7 @@ function SiteTable() {
 
           {!loading &&
             !error &&
-            sites.map((site) => (
+            pagination.currentData.map((site) => (
               <tr key={site.id}>
                 <td style={tableData}>{site.site_name}</td>
                 <td style={tableData}>{site.location}</td>
@@ -98,7 +114,7 @@ function SiteTable() {
                   >
                     Edit
                   </button>
-                  <button type="button" onClick={() => handleDelete(site.id)}>
+                  <button type="button" onClick={() => setDeleteTarget(site)}>
                     Delete
                   </button>
                 </td>
@@ -106,6 +122,28 @@ function SiteTable() {
             ))}
         </tbody>
       </table>
+      <Pagination
+        currentPage={pagination.currentPage}
+        totalPages={pagination.totalPages}
+        onNext={pagination.nextPage}
+        onPrevious={pagination.prevPage}
+        totalItems={sites.length}
+        startIndex={pagination.startIndex}
+        endIndex={pagination.endIndex}
+      />
+      <Modal isOpen={Boolean(deleteTarget)} onClose={() => setDeleteTarget(null)}>
+        <ConfirmDialog
+          title="Delete site?"
+          message={`This will delete ${deleteTarget?.site_name || "this site"} and linked site records.`}
+          onConfirm={handleDelete}
+          onCancel={() => setDeleteTarget(null)}
+        />
+      </Modal>
+      <ErrorDialog
+        isOpen={Boolean(dialogError)}
+        message={dialogError}
+        onClose={() => setDialogError("")}
+      />
     </div>
   );
 }

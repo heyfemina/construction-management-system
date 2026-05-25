@@ -63,6 +63,7 @@ const reportConfigs = {
     map: (item) => ({
       id: item.id,
       vendor_name: item.vendor_name,
+      site_name: item.site_name || "-",
       contact_number: item.contact_number,
       email: item.email,
       address: item.address,
@@ -72,6 +73,7 @@ const reportConfigs = {
     }),
     columns: [
       { key: "vendor_name", label: "Vendor" },
+      { key: "site_name", label: "Site" },
       { key: "contact_number", label: "Contact" },
       { key: "email", label: "Email" },
       { key: "address", label: "Address" },
@@ -84,9 +86,7 @@ const reportConfigs = {
     title: "Labour Attendance Report",
     fileName: "Labour Attendance Report",
     tableTitle: "All Labour Attendance",
-    helperText:
-      "Showing labour attendance records. Search by labour name to find attendance data quickly.",
-    searchLabel: "Labour Name Search",
+    searchLabel: "Search Labour",
     searchPlaceholder: "Search labour name",
     searchFields: ["labour_name"],
     serverSearch: true,
@@ -218,6 +218,7 @@ const reportConfigs = {
       description: item.description,
       material_cost: money(item.material_cost),
       total_expense: money(item.total_expense),
+      vendor_count: item.vendor_count || 0,
       labour_count: item.labour_count || 0,
       created_at: formatDate(item.created_at),
     }),
@@ -227,6 +228,7 @@ const reportConfigs = {
       { key: "description", label: "Description" },
       { key: "material_cost", label: "Material Cost" },
       { key: "total_expense", label: "Expenses" },
+      { key: "vendor_count", label: "Vendors" },
       { key: "labour_count", label: "Labours" },
       { key: "created_at", label: "Created Date" },
     ],
@@ -335,41 +337,18 @@ function ReportPage({ type }) {
       )}
 
       {config.searchFields?.length > 0 && (
-        <div
-          style={{
-            backgroundColor: "#ffffff",
-            padding: "18px",
-            borderRadius: "12px",
-            marginBottom: "20px",
-            boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
-          }}
-        >
+        <div className="report-search-card">
           <label
             htmlFor="report-search"
-            style={{
-              display: "block",
-              fontWeight: "700",
-              marginBottom: "8px",
-            }}
+            className="report-search-label"
           >
             {config.searchLabel || "Search"}
           </label>
-          <div
-            style={{
-              position: "relative",
-            }}
-          >
+          <div className="report-search-field">
             <Search
               size={18}
               strokeWidth={2.3}
-              style={{
-                position: "absolute",
-                left: "12px",
-                top: "50%",
-                transform: "translateY(-50%)",
-                color: "#6b7280",
-                pointerEvents: "none",
-              }}
+              className="report-search-icon"
             />
             <input
               id="report-search"
@@ -377,12 +356,7 @@ function ReportPage({ type }) {
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder={config.searchPlaceholder || "Search report"}
-              style={{
-                width: "100%",
-                padding: "12px 12px 12px 40px",
-                borderRadius: "8px",
-                border: "1px solid #d1d5db",
-              }}
+              className="report-search-input"
             />
           </div>
         </div>

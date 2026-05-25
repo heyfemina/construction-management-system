@@ -1,6 +1,12 @@
 import { useEffect, useState } from "react";
 import { addReceivable } from "../../services/financeService";
 import { getSites } from "../../api/siteApi";
+import ErrorDialog from "../common/ErrorDialog";
+import {
+  validateNonNegativeNumber,
+  validatePositiveNumber,
+  validateRequired,
+} from "../../utils/formValidation";
 
 function ClientForm() {
   const [clientName, setClientName] = useState("");
@@ -24,6 +30,28 @@ function ClientForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+
+    const validationError =
+      validateRequired([
+        { label: "Client name", value: clientName },
+        { label: "Site", value: siteId },
+        { label: "Total amount", value: totalAmount },
+        { label: "Received amount", value: receivedAmount },
+        { label: "Due date", value: dueDate },
+      ]) ||
+      validatePositiveNumber(totalAmount, "Total amount") ||
+      validateNonNegativeNumber(receivedAmount, "Received amount");
+
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
+    if (pendingAmount < 0) {
+      setError("Received amount cannot be greater than total amount");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -50,10 +78,11 @@ function ClientForm() {
   };
 
   return (
+    <>
     <div style={cardStyle}>
       <h2 style={headingStyle}>Add Receivable</h2>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} noValidate>
         {error && <p style={errorStyle}>{error}</p>}
 
         <div style={{ marginBottom: "15px" }}>
@@ -71,6 +100,7 @@ function ClientForm() {
         <div style={{ marginBottom: "15px" }}>
           <label>Site</label>
           <select
+            required
             value={siteId}
             onChange={(e) => setSiteId(e.target.value)}
             style={inputStyle}
@@ -100,6 +130,7 @@ function ClientForm() {
           <label>Received Amount</label>
           <input
             type="number"
+            required
             value={receivedAmount}
             onChange={(e) => setReceivedAmount(e.target.value)}
             placeholder="Enter received amount"
@@ -111,6 +142,7 @@ function ClientForm() {
           <label>Due Date</label>
           <input
             type="date"
+            required
             value={dueDate}
             onChange={(e) => setDueDate(e.target.value)}
             style={inputStyle}
@@ -126,6 +158,12 @@ function ClientForm() {
         </button>
       </form>
     </div>
+    <ErrorDialog
+      isOpen={Boolean(error)}
+      message={error}
+      onClose={() => setError("")}
+    />
+    </>
   );
 }
 

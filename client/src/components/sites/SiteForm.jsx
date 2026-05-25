@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { addSite, updateSite } from "../../services/siteService";
+import ErrorDialog from "../common/ErrorDialog";
+import FieldError from "../common/FieldError";
 
 function SiteForm() {
   const [editingId, setEditingId] = useState("");
@@ -7,6 +9,7 @@ function SiteForm() {
   const [location, setLocation] = useState("");
   const [description, setDescription] = useState("");
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -18,6 +21,7 @@ function SiteForm() {
       setLocation(site.location || "");
       setDescription(site.description || "");
       setError("");
+      setFieldErrors({});
       window.scrollTo({ top: 0, behavior: "smooth" });
     };
 
@@ -33,11 +37,29 @@ function SiteForm() {
     setSiteName("");
     setLocation("");
     setDescription("");
+    setFieldErrors({});
+  };
+
+  const clearFieldError = (field) => {
+    setFieldErrors((current) => ({ ...current, [field]: "" }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+
+    const nextFieldErrors = {
+      siteName: siteName.trim() ? "" : "Site name is required",
+      location: location.trim() ? "" : "Location is required",
+      description: description.trim() ? "" : "Description is required",
+    };
+
+    setFieldErrors(nextFieldErrors);
+
+    if (Object.values(nextFieldErrors).some(Boolean)) {
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -63,10 +85,11 @@ function SiteForm() {
   };
 
   return (
+    <>
     <div style={cardStyle}>
       <h2 style={headingStyle}>{editingId ? "Edit Site" : "Add Site"}</h2>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} noValidate>
         {error && <p style={errorStyle}>{error}</p>}
 
         <div style={{ marginBottom: "15px" }}>
@@ -75,10 +98,14 @@ function SiteForm() {
             type="text"
             required
             value={siteName}
-            onChange={(e) => setSiteName(e.target.value)}
+            onChange={(e) => {
+              setSiteName(e.target.value);
+              clearFieldError("siteName");
+            }}
             placeholder="Enter site name"
             style={inputStyle}
           />
+          <FieldError message={fieldErrors.siteName} />
         </div>
 
         <div style={{ marginBottom: "15px" }}>
@@ -87,21 +114,30 @@ function SiteForm() {
             type="text"
             required
             value={location}
-            onChange={(e) => setLocation(e.target.value)}
+            onChange={(e) => {
+              setLocation(e.target.value);
+              clearFieldError("location");
+            }}
             placeholder="Enter location"
             style={inputStyle}
           />
+          <FieldError message={fieldErrors.location} />
         </div>
 
         <div style={{ marginBottom: "15px" }}>
           <label>Description</label>
           <textarea
+            required
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            onChange={(e) => {
+              setDescription(e.target.value);
+              clearFieldError("description");
+            }}
             placeholder="Enter site description"
             rows="4"
             style={{ ...inputStyle, resize: "none" }}
           />
+          <FieldError message={fieldErrors.description} />
         </div>
 
         <div style={buttonRowStyle}>
@@ -122,6 +158,12 @@ function SiteForm() {
         </div>
       </form>
     </div>
+    <ErrorDialog
+      isOpen={Boolean(error)}
+      message={error}
+      onClose={() => setError("")}
+    />
+    </>
   );
 }
 

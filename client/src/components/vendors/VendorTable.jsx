@@ -1,14 +1,22 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { deleteVendor, getVendors } from "../../services/vendorService";
+import ConfirmDialog from "../common/ConfirmDialog";
+import ErrorDialog from "../common/ErrorDialog";
+import Modal from "../common/Modal";
+import Pagination from "../common/Pagination";
 import ExcelExport from "../reports/ExcelExport";
 import PDFExport from "../reports/PDFExport";
+import usePagination from "../../hooks/usePagination";
 import isConnectionError from "../../utils/isConnectionError";
 
 function VendorTable() {
   const [vendors, setVendors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [dialogError, setDialogError] = useState("");
+  const pagination = usePagination(vendors, 10);
 
   const loadVendors = async () => {
     try {
@@ -38,9 +46,17 @@ function VendorTable() {
     };
   }, []);
 
-  const handleDelete = async (id) => {
-    await deleteVendor(id);
-    loadVendors();
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+
+    try {
+      await deleteVendor(deleteTarget.id);
+      setDeleteTarget(null);
+      loadVendors();
+    } catch (err) {
+      setDeleteTarget(null);
+      setDialogError(err.response?.data?.message || "Could not delete vendor");
+    }
   };
 
   const handleEdit = (vendor) => {
@@ -53,6 +69,7 @@ function VendorTable() {
 
   const exportColumns = [
     { key: "vendor_name", label: "Vendor Name" },
+    { key: "site_name", label: "Site" },
     { key: "contact_number", label: "Contact" },
     { key: "email", label: "Email" },
     { key: "total_purchase", label: "Purchase" },
@@ -120,6 +137,7 @@ function VendorTable() {
         <thead>
           <tr>
             <th style={tableHead}>Vendor Name</th>
+            <th style={tableHead}>Site</th>
             <th style={tableHead}>Contact</th>
             <th style={tableHead}>Email</th>
             <th style={tableHead}>Purchase</th>
@@ -132,25 +150,26 @@ function VendorTable() {
         <tbody>
           {loading && (
             <tr>
-              <td style={tableData} colSpan="7">Loading...</td>
+              <td style={tableData} colSpan="8">Loading...</td>
             </tr>
           )}
 
           {!loading && error && (
             <tr>
-              <td style={tableData} colSpan="7">{error}</td>
+              <td style={tableData} colSpan="8">{error}</td>
             </tr>
           )}
 
           {!loading && !error && vendors.length === 0 && (
             <tr>
-              <td style={tableData} colSpan="7">No vendors yet</td>
+              <td style={tableData} colSpan="8">No vendors yet</td>
             </tr>
           )}
 
-          {!loading && !error && vendors.map((vendor) => (
+          {!loading && !error && pagination.currentData.map((vendor) => (
             <tr key={vendor.id}>
               <td style={tableData}>{vendor.vendor_name}</td>
+              <td style={tableData}>{vendor.site_name || "-"}</td>
               <td style={tableData}>{vendor.contact_number}</td>
               <td style={tableData}>{vendor.email}</td>
               <td style={tableData}>Rs. {vendor.total_purchase || 0}</td>
@@ -167,7 +186,7 @@ function VendorTable() {
                 >
                   Edit
                 </button>
-                <button type="button" onClick={() => handleDelete(vendor.id)}>
+                <button type="button" onClick={() => setDeleteTarget(vendor)}>
                   Delete
                 </button>
               </td>
@@ -175,6 +194,28 @@ function VendorTable() {
           ))}
         </tbody>
       </table>
+      <Pagination
+        currentPage={pagination.currentPage}
+        totalPages={pagination.totalPages}
+        onNext={pagination.nextPage}
+        onPrevious={pagination.prevPage}
+        totalItems={vendors.length}
+        startIndex={pagination.startIndex}
+        endIndex={pagination.endIndex}
+      />
+      <Modal isOpen={Boolean(deleteTarget)} onClose={() => setDeleteTarget(null)}>
+        <ConfirmDialog
+          title="Delete vendor?"
+          message={`This will delete ${deleteTarget?.vendor_name || "this vendor"}.`}
+          onConfirm={handleDelete}
+          onCancel={() => setDeleteTarget(null)}
+        />
+      </Modal>
+      <ErrorDialog
+        isOpen={Boolean(dialogError)}
+        message={dialogError}
+        onClose={() => setDialogError("")}
+      />
     </div>
   );
 }

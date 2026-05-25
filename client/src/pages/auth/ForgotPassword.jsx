@@ -1,10 +1,22 @@
 import { useState } from "react";
+import { validateEmail, validateRequired } from "../../utils/formValidation";
 
 function ForgotPassword() {
   const [email, setEmail] = useState("");
+  const [error, setError] = useState("");
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setError("");
+
+    const validationError =
+      validateRequired([{ label: "Email address", value: email }]) ||
+      validateEmail(email);
+
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
 
     console.log({
       email,
@@ -26,12 +38,14 @@ function ForgotPassword() {
         Forgot Password
       </h1>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} noValidate>
+        {error && <p style={errorStyle}>{error}</p>}
         <div style={{ marginBottom: "20px" }}>
           <label>Email Address</label>
 
           <input
             type="email"
+            required
             placeholder="Enter registered email"
             value={email}
             onChange={(e) =>
@@ -66,6 +80,12 @@ const buttonStyle = {
   borderRadius: "8px",
   fontWeight: "600",
   cursor: "pointer",
+};
+
+const errorStyle = {
+  color: "#dc2626",
+  fontWeight: "600",
+  marginBottom: "12px",
 };
 
 export default ForgotPassword;

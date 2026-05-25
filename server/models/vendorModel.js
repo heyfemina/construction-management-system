@@ -3,6 +3,7 @@ const vendorModel = {
 
   columns: [
     "id",
+    "site_id",
     "vendor_name",
     "contact_number",
     "email",

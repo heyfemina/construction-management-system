@@ -4,6 +4,8 @@ import {
   getLabours,
 } from "../../api/labourApi";
 import { getSites } from "../../api/siteApi";
+import ErrorDialog from "../common/ErrorDialog";
+import FieldError from "../common/FieldError";
 
 function AttendanceForm() {
   const [labourId, setLabourId] = useState("");
@@ -12,6 +14,8 @@ function AttendanceForm() {
   const [labours, setLabours] = useState([]);
   const [sites, setSites] = useState([]);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
 
   const loadOptions = () => {
     Promise.all([getLabours(), getSites()])
@@ -38,6 +42,20 @@ function AttendanceForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+
+    const nextFieldErrors = {
+      labourId: labourId ? "" : "Labour is required",
+      siteId: siteId ? "" : "Site is required",
+      date: date ? "" : "Date is required",
+    };
+
+    setFieldErrors(nextFieldErrors);
+
+    if (Object.values(nextFieldErrors).some(Boolean)) {
+      return;
+    }
+
     setSaving(true);
 
     try {
@@ -51,13 +69,17 @@ function AttendanceForm() {
       setLabourId("");
       setSiteId("");
       setDate("");
+      setFieldErrors({});
       window.dispatchEvent(new Event("labours:changed"));
+    } catch (err) {
+      setError(err.response?.data?.message || "Could not mark attendance");
     } finally {
       setSaving(false);
     }
   };
 
   return (
+    <>
     <div
       style={{
         backgroundColor: "#ffffff",
@@ -76,13 +98,16 @@ function AttendanceForm() {
         Attendance
       </h2>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} noValidate>
         <div style={{ marginBottom: "15px" }}>
           <label>Labour</label>
           <select
             required
             value={labourId}
-            onChange={(e) => setLabourId(e.target.value)}
+            onChange={(e) => {
+              setLabourId(e.target.value);
+              setFieldErrors((current) => ({ ...current, labourId: "" }));
+            }}
             style={inputStyle}
           >
             <option value="">Select labour</option>
@@ -92,13 +117,18 @@ function AttendanceForm() {
               </option>
             ))}
           </select>
+          <FieldError message={fieldErrors.labourId} />
         </div>
 
         <div style={{ marginBottom: "15px" }}>
           <label>Site</label>
           <select
+            required
             value={siteId}
-            onChange={(e) => setSiteId(e.target.value)}
+            onChange={(e) => {
+              setSiteId(e.target.value);
+              setFieldErrors((current) => ({ ...current, siteId: "" }));
+            }}
             style={inputStyle}
           >
             <option value="">Select site</option>
@@ -108,6 +138,7 @@ function AttendanceForm() {
               </option>
             ))}
           </select>
+          <FieldError message={fieldErrors.siteId} />
         </div>
 
         <div style={{ marginBottom: "15px" }}>
@@ -115,10 +146,15 @@ function AttendanceForm() {
 
           <input
             type="date"
+            required
             value={date}
-            onChange={(e) => setDate(e.target.value)}
+            onChange={(e) => {
+              setDate(e.target.value);
+              setFieldErrors((current) => ({ ...current, date: "" }));
+            }}
             style={inputStyle}
           />
+          <FieldError message={fieldErrors.date} />
         </div>
 
         <button type="submit" style={buttonStyle} disabled={saving}>
@@ -126,6 +162,12 @@ function AttendanceForm() {
         </button>
       </form>
     </div>
+    <ErrorDialog
+      isOpen={Boolean(error)}
+      message={error}
+      onClose={() => setError("")}
+    />
+    </>
   );
 }
 

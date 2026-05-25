@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
 import { addPayment, getFinanceData } from "../../services/financeService";
+import ErrorDialog from "../common/ErrorDialog";
+import FieldError from "../common/FieldError";
+import {
+  validatePositiveNumber,
+} from "../../utils/formValidation";
 
 function PaymentForm() {
   const [clientId, setClientId] = useState("");
@@ -7,6 +12,7 @@ function PaymentForm() {
   const [method, setMethod] = useState("");
   const [clients, setClients] = useState([]);
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
   const loadClients = () => {
@@ -27,6 +33,19 @@ function PaymentForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+
+    const nextFieldErrors = {
+      clientId: clientId ? "" : "Client / Party is required",
+      amount: amount ? validatePositiveNumber(amount, "Amount") : "Amount is required",
+      method: method.trim() ? "" : "Payment method is required",
+    };
+
+    setFieldErrors(nextFieldErrors);
+
+    if (Object.values(nextFieldErrors).some(Boolean)) {
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -41,6 +60,7 @@ function PaymentForm() {
       setClientId("");
       setAmount("");
       setMethod("");
+      setFieldErrors({});
       window.dispatchEvent(new Event("finance:changed"));
     } catch (err) {
       setError(err.response?.data?.message || "Could not save payment");
@@ -50,10 +70,11 @@ function PaymentForm() {
   };
 
   return (
+    <>
     <div style={cardStyle}>
       <h2 style={headingStyle}>Add Payment</h2>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} noValidate>
         {error && <p style={errorStyle}>{error}</p>}
 
         <div style={{ marginBottom: "15px" }}>
@@ -61,7 +82,10 @@ function PaymentForm() {
           <select
             required
             value={clientId}
-            onChange={(e) => setClientId(e.target.value)}
+            onChange={(e) => {
+              setClientId(e.target.value);
+              setFieldErrors((current) => ({ ...current, clientId: "" }));
+            }}
             style={inputStyle}
           >
             <option value="">Select client or party</option>
@@ -71,6 +95,7 @@ function PaymentForm() {
               </option>
             ))}
           </select>
+          <FieldError message={fieldErrors.clientId} />
         </div>
 
         <div style={{ marginBottom: "15px" }}>
@@ -81,21 +106,30 @@ function PaymentForm() {
             min="0"
             step="0.01"
             value={amount}
-            onChange={(e) => setAmount(e.target.value)}
+            onChange={(e) => {
+              setAmount(e.target.value);
+              setFieldErrors((current) => ({ ...current, amount: "" }));
+            }}
             placeholder="Enter payment amount"
             style={inputStyle}
           />
+          <FieldError message={fieldErrors.amount} />
         </div>
 
         <div style={{ marginBottom: "15px" }}>
           <label>Payment Method</label>
           <input
             type="text"
+            required
             value={method}
-            onChange={(e) => setMethod(e.target.value)}
+            onChange={(e) => {
+              setMethod(e.target.value);
+              setFieldErrors((current) => ({ ...current, method: "" }));
+            }}
             placeholder="Cash / UPI / Bank"
             style={inputStyle}
           />
+          <FieldError message={fieldErrors.method} />
         </div>
 
         <button type="submit" style={buttonStyle} disabled={loading}>
@@ -103,6 +137,12 @@ function PaymentForm() {
         </button>
       </form>
     </div>
+    <ErrorDialog
+      isOpen={Boolean(error)}
+      message={error}
+      onClose={() => setError("")}
+    />
+    </>
   );
 }
 

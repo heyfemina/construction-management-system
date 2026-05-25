@@ -3,6 +3,11 @@ import {
   createLabourPayment,
   getLabours,
 } from "../../api/labourApi";
+import ErrorDialog from "../common/ErrorDialog";
+import {
+  validatePositiveNumber,
+  validateRequired,
+} from "../../utils/formValidation";
 
 function LabourPaymentForm() {
   const [labourId, setLabourId] = useState("");
@@ -34,8 +39,15 @@ function LabourPaymentForm() {
     e.preventDefault();
     setError("");
 
-    if (!labourId || Number(amount) <= 0) {
-      setError("Select labour and enter payment amount.");
+    const validationError =
+      validateRequired([
+        { label: "Labour", value: labourId },
+        { label: "Paid amount", value: amount },
+        { label: "Payment method", value: method },
+      ]) || validatePositiveNumber(amount, "Paid amount");
+
+    if (validationError) {
+      setError(validationError);
       return;
     }
 
@@ -69,6 +81,7 @@ function LabourPaymentForm() {
   };
 
   return (
+    <>
     <div style={cardStyle}>
       <h2 style={headingStyle}>Record Labour Payment (Amount Paid)</h2>
 
@@ -77,7 +90,7 @@ function LabourPaymentForm() {
         balance.
       </p>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} noValidate>
         {error && <p style={errorStyle}>{error}</p>}
 
         <div style={{ marginBottom: "15px" }}>
@@ -127,6 +140,7 @@ function LabourPaymentForm() {
           <label>Payment Method</label>
           <input
             type="text"
+            required
             value={method}
             onChange={(e) => setMethod(e.target.value)}
             placeholder="Cash / UPI / Bank"
@@ -139,6 +153,12 @@ function LabourPaymentForm() {
         </button>
       </form>
     </div>
+    <ErrorDialog
+      isOpen={Boolean(error)}
+      message={error}
+      onClose={() => setError("")}
+    />
+    </>
   );
 }
 

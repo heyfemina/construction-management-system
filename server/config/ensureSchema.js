@@ -34,4 +34,8 @@ export default async function ensureSchema() {
   await pool.query(
     "ALTER TABLE vendor_payments ADD COLUMN IF NOT EXISTS payment_method VARCHAR(50)"
   );
+
+  await pool.query(
+    "ALTER TABLE vendors ADD COLUMN IF NOT EXISTS site_id INTEGER REFERENCES sites(id) ON DELETE SET NULL"
+  );
 }

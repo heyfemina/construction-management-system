@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
 import { addExpense } from "../../services/financeService";
 import { getSites } from "../../api/siteApi";
+import ErrorDialog from "../common/ErrorDialog";
+import FieldError from "../common/FieldError";
+import {
+  validatePositiveNumber,
+} from "../../utils/formValidation";
 
 function ExpenseForm() {
   const [expenseType, setExpenseType] = useState("");
@@ -9,6 +14,7 @@ function ExpenseForm() {
   const [description, setDescription] = useState("");
   const [sites, setSites] = useState([]);
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -20,6 +26,20 @@ function ExpenseForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+
+    const nextFieldErrors = {
+      expenseType: expenseType.trim() ? "" : "Expense type is required",
+      siteId: siteId ? "" : "Site is required",
+      amount: amount ? validatePositiveNumber(amount, "Amount") : "Amount is required",
+      description: description.trim() ? "" : "Description is required",
+    };
+
+    setFieldErrors(nextFieldErrors);
+
+    if (Object.values(nextFieldErrors).some(Boolean)) {
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -35,6 +55,7 @@ function ExpenseForm() {
       setSiteId("");
       setAmount("");
       setDescription("");
+      setFieldErrors({});
       window.dispatchEvent(new Event("finance:changed"));
     } catch (err) {
       setError(err.response?.data?.message || "Could not save expense");
@@ -44,10 +65,11 @@ function ExpenseForm() {
   };
 
   return (
+    <>
     <div style={cardStyle}>
       <h2 style={headingStyle}>Add Expense</h2>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} noValidate>
         {error && <p style={errorStyle}>{error}</p>}
 
         <div style={{ marginBottom: "15px" }}>
@@ -56,17 +78,25 @@ function ExpenseForm() {
             type="text"
             required
             value={expenseType}
-            onChange={(e) => setExpenseType(e.target.value)}
+            onChange={(e) => {
+              setExpenseType(e.target.value);
+              setFieldErrors((current) => ({ ...current, expenseType: "" }));
+            }}
             placeholder="Material / Labour / Transport"
             style={inputStyle}
           />
+          <FieldError message={fieldErrors.expenseType} />
         </div>
 
         <div style={{ marginBottom: "15px" }}>
           <label>Site</label>
           <select
+            required
             value={siteId}
-            onChange={(e) => setSiteId(e.target.value)}
+            onChange={(e) => {
+              setSiteId(e.target.value);
+              setFieldErrors((current) => ({ ...current, siteId: "" }));
+            }}
             style={inputStyle}
           >
             <option value="">No site selected</option>
@@ -76,6 +106,7 @@ function ExpenseForm() {
               </option>
             ))}
           </select>
+          <FieldError message={fieldErrors.siteId} />
         </div>
 
         <div style={{ marginBottom: "15px" }}>
@@ -84,21 +115,30 @@ function ExpenseForm() {
             type="number"
             required
             value={amount}
-            onChange={(e) => setAmount(e.target.value)}
+            onChange={(e) => {
+              setAmount(e.target.value);
+              setFieldErrors((current) => ({ ...current, amount: "" }));
+            }}
             placeholder="Enter amount"
             style={inputStyle}
           />
+          <FieldError message={fieldErrors.amount} />
         </div>
 
         <div style={{ marginBottom: "15px" }}>
           <label>Description</label>
           <input
             type="text"
+            required
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            onChange={(e) => {
+              setDescription(e.target.value);
+              setFieldErrors((current) => ({ ...current, description: "" }));
+            }}
             placeholder="Enter details"
             style={inputStyle}
           />
+          <FieldError message={fieldErrors.description} />
         </div>
 
         <button type="submit" style={buttonStyle} disabled={loading}>
@@ -106,6 +146,12 @@ function ExpenseForm() {
         </button>
       </form>
     </div>
+    <ErrorDialog
+      isOpen={Boolean(error)}
+      message={error}
+      onClose={() => setError("")}
+    />
+    </>
   );
 }
 

@@ -1,13 +1,21 @@
 import { useEffect, useState } from "react";
 import { deleteLabour, getLabours } from "../../services/labourService";
+import ConfirmDialog from "../common/ConfirmDialog";
+import ErrorDialog from "../common/ErrorDialog";
+import Modal from "../common/Modal";
+import Pagination from "../common/Pagination";
 import ExcelExport from "../reports/ExcelExport";
 import PDFExport from "../reports/PDFExport";
+import usePagination from "../../hooks/usePagination";
 import isConnectionError from "../../utils/isConnectionError";
 
 function LabourTable() {
   const [labours, setLabours] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [dialogError, setDialogError] = useState("");
+  const pagination = usePagination(labours, 10);
 
   const loadLabours = async () => {
     try {
@@ -37,9 +45,17 @@ function LabourTable() {
     };
   }, []);
 
-  const handleDelete = async (id) => {
-    await deleteLabour(id);
-    loadLabours();
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+
+    try {
+      await deleteLabour(deleteTarget.id);
+      setDeleteTarget(null);
+      loadLabours();
+    } catch (err) {
+      setDeleteTarget(null);
+      setDialogError(err.response?.data?.message || "Could not delete labour");
+    }
   };
 
   const exportColumns = [
@@ -110,7 +126,7 @@ function LabourTable() {
 
           {!loading &&
             !error &&
-            labours.map((labour) => (
+            pagination.currentData.map((labour) => (
               <tr key={labour.id}>
                 <td style={tableData}>{labour.labour_name}</td>
                 <td style={tableData}>{labour.contact_number}</td>
@@ -120,7 +136,7 @@ function LabourTable() {
                 <td style={tableData}>Rs. {labour.total_wage || 0}</td>
                 <td style={tableData}>Rs. {labour.pending_amount || 0}</td>
                 <td style={tableData}>
-                  <button type="button" onClick={() => handleDelete(labour.id)}>
+                  <button type="button" onClick={() => setDeleteTarget(labour)}>
                     Delete
                   </button>
                 </td>
@@ -128,6 +144,28 @@ function LabourTable() {
             ))}
         </tbody>
       </table>
+      <Pagination
+        currentPage={pagination.currentPage}
+        totalPages={pagination.totalPages}
+        onNext={pagination.nextPage}
+        onPrevious={pagination.prevPage}
+        totalItems={labours.length}
+        startIndex={pagination.startIndex}
+        endIndex={pagination.endIndex}
+      />
+      <Modal isOpen={Boolean(deleteTarget)} onClose={() => setDeleteTarget(null)}>
+        <ConfirmDialog
+          title="Delete labour?"
+          message={`This will delete ${deleteTarget?.labour_name || "this labour"}.`}
+          onConfirm={handleDelete}
+          onCancel={() => setDeleteTarget(null)}
+        />
+      </Modal>
+      <ErrorDialog
+        isOpen={Boolean(dialogError)}
+        message={dialogError}
+        onClose={() => setDialogError("")}
+      />
     </div>
   );
 }

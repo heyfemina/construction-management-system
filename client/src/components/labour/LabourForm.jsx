@@ -1,6 +1,12 @@
 import { useEffect, useState } from "react";
 import { addLabour } from "../../services/labourService";
 import { getSites } from "../../api/siteApi";
+import ErrorDialog from "../common/ErrorDialog";
+import FieldError from "../common/FieldError";
+import {
+  validatePhone,
+  validatePositiveNumber,
+} from "../../utils/formValidation";
 
 function LabourForm() {
   const [labourName, setLabourName] = useState("");
@@ -10,6 +16,7 @@ function LabourForm() {
   const [siteId, setSiteId] = useState("");
   const [sites, setSites] = useState([]);
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -21,6 +28,25 @@ function LabourForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+
+    const nextFieldErrors = {
+      labourName: labourName.trim() ? "" : "Labour name is required",
+      contact: contact.trim()
+        ? validatePhone(contact)
+        : "Contact number is required",
+      dailyWage: dailyWage
+        ? validatePositiveNumber(dailyWage, "Daily wage")
+        : "Daily wage is required",
+      siteId: siteId ? "" : "Site is required",
+      address: address.trim() ? "" : "Address is required",
+    };
+
+    setFieldErrors(nextFieldErrors);
+
+    if (Object.values(nextFieldErrors).some(Boolean)) {
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -37,6 +63,7 @@ function LabourForm() {
       setDailyWage("");
       setAddress("");
       setSiteId("");
+      setFieldErrors({});
       window.dispatchEvent(new Event("labours:changed"));
     } catch (err) {
       setError(err.response?.data?.message || "Could not save labour");
@@ -46,10 +73,11 @@ function LabourForm() {
   };
 
   return (
+    <>
     <div style={cardStyle}>
       <h2 style={headingStyle}>Add Labour</h2>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} noValidate>
         {error && <p style={errorStyle}>{error}</p>}
 
         <div style={{ marginBottom: "15px" }}>
@@ -58,21 +86,30 @@ function LabourForm() {
             type="text"
             required
             value={labourName}
-            onChange={(e) => setLabourName(e.target.value)}
+            onChange={(e) => {
+              setLabourName(e.target.value);
+              setFieldErrors((current) => ({ ...current, labourName: "" }));
+            }}
             placeholder="Enter labour name"
             style={inputStyle}
           />
+          <FieldError message={fieldErrors.labourName} />
         </div>
 
         <div style={{ marginBottom: "15px" }}>
           <label>Contact Number</label>
           <input
             type="text"
+            required
             value={contact}
-            onChange={(e) => setContact(e.target.value)}
+            onChange={(e) => {
+              setContact(e.target.value);
+              setFieldErrors((current) => ({ ...current, contact: "" }));
+            }}
             placeholder="Enter contact number"
             style={inputStyle}
           />
+          <FieldError message={fieldErrors.contact} />
         </div>
 
         <div style={{ marginBottom: "15px" }}>
@@ -81,17 +118,25 @@ function LabourForm() {
             type="number"
             required
             value={dailyWage}
-            onChange={(e) => setDailyWage(e.target.value)}
+            onChange={(e) => {
+              setDailyWage(e.target.value);
+              setFieldErrors((current) => ({ ...current, dailyWage: "" }));
+            }}
             placeholder="Enter daily wage"
             style={inputStyle}
           />
+          <FieldError message={fieldErrors.dailyWage} />
         </div>
 
         <div style={{ marginBottom: "15px" }}>
           <label>Site</label>
           <select
+            required
             value={siteId}
-            onChange={(e) => setSiteId(e.target.value)}
+            onChange={(e) => {
+              setSiteId(e.target.value);
+              setFieldErrors((current) => ({ ...current, siteId: "" }));
+            }}
             style={inputStyle}
           >
             <option value="">No site selected</option>
@@ -101,17 +146,23 @@ function LabourForm() {
               </option>
             ))}
           </select>
+          <FieldError message={fieldErrors.siteId} />
         </div>
 
         <div style={{ marginBottom: "15px" }}>
           <label>Address</label>
           <input
             type="text"
+            required
             value={address}
-            onChange={(e) => setAddress(e.target.value)}
+            onChange={(e) => {
+              setAddress(e.target.value);
+              setFieldErrors((current) => ({ ...current, address: "" }));
+            }}
             placeholder="Enter address"
             style={inputStyle}
           />
+          <FieldError message={fieldErrors.address} />
         </div>
 
         <button type="submit" style={buttonStyle} disabled={loading}>
@@ -119,6 +170,12 @@ function LabourForm() {
         </button>
       </form>
     </div>
+    <ErrorDialog
+      isOpen={Boolean(error)}
+      message={error}
+      onClose={() => setError("")}
+    />
+    </>
   );
 }
 

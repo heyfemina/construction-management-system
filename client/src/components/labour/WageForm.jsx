@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
 import { createWage, getLabours } from "../../api/labourApi";
+import ErrorDialog from "../common/ErrorDialog";
+import {
+  validatePositiveNumber,
+  validateRequired,
+} from "../../utils/formValidation";
 
 function WageForm() {
   const [labourId, setLabourId] = useState("");
@@ -33,8 +38,17 @@ function WageForm() {
     e.preventDefault();
     setError("");
 
-    if (!labourId || Number(days) <= 0 || Number(rate) <= 0) {
-      setError("Select labour and enter valid days plus daily rate.");
+    const validationError =
+      validateRequired([
+        { label: "Labour", value: labourId },
+        { label: "Total days", value: days },
+        { label: "Rate per day", value: rate },
+      ]) ||
+      validatePositiveNumber(days, "Total days") ||
+      validatePositiveNumber(rate, "Rate per day");
+
+    if (validationError) {
+      setError(validationError);
       return;
     }
 
@@ -61,6 +75,7 @@ function WageForm() {
   };
 
   return (
+    <>
     <div
       style={{
         backgroundColor: "#ffffff",
@@ -84,7 +99,7 @@ function WageForm() {
         paid.
       </p>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} noValidate>
         {error && <p style={errorStyle}>{error}</p>}
 
         <div style={{ marginBottom: "15px" }}>
@@ -161,6 +176,12 @@ function WageForm() {
         </button>
       </form>
     </div>
+    <ErrorDialog
+      isOpen={Boolean(error)}
+      message={error}
+      onClose={() => setError("")}
+    />
+    </>
   );
 }
 

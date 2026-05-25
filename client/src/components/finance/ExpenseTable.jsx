@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { getFinanceData } from "../../services/financeService";
+import Pagination from "../common/Pagination";
+import usePagination from "../../hooks/usePagination";
 import isConnectionError from "../../utils/isConnectionError";
 
 function ExpenseTable() {
@@ -70,7 +72,10 @@ function ExpenseTable() {
 }
 
 function SimpleTable({ headers, rows, loading, error, emptyText }) {
+  const pagination = usePagination(rows, 10);
+
   return (
+    <>
     <table style={{ width: "100%", borderCollapse: "collapse" }}>
       <thead>
         <tr>
@@ -89,7 +94,7 @@ function SimpleTable({ headers, rows, loading, error, emptyText }) {
         )}
         {!loading &&
           !error &&
-          rows.map((row, index) => (
+          pagination.currentData.map((row, index) => (
             <tr key={index}>
               {row.map((cell, cellIndex) => (
                 <td key={cellIndex} style={tableData}>
@@ -100,6 +105,16 @@ function SimpleTable({ headers, rows, loading, error, emptyText }) {
           ))}
       </tbody>
     </table>
+    <Pagination
+      currentPage={pagination.currentPage}
+      totalPages={pagination.totalPages}
+      onNext={pagination.nextPage}
+      onPrevious={pagination.prevPage}
+      totalItems={rows.length}
+      startIndex={pagination.startIndex}
+      endIndex={pagination.endIndex}
+    />
+    </>
   );
 }
 

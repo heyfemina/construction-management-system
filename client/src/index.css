@@ -869,6 +869,14 @@ a {
   font-weight: 720;
 }
 
+.field-error-line {
+  margin: 6px 0 0;
+  color: var(--danger);
+  font-size: 12px;
+  font-weight: 760;
+  line-height: 1.35;
+}
+
 .auth-link-text {
   margin: 22px 0 0;
   text-align: center;
@@ -1114,6 +1122,136 @@ a {
   font-size: 12px;
   font-weight: 800;
   white-space: nowrap;
+}
+
+.report-search-card {
+  margin-bottom: 20px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.report-search-label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--heading);
+  font-size: 13px;
+  font-weight: 820;
+}
+
+.report-search-field {
+  position: relative;
+}
+
+.report-search-icon {
+  position: absolute;
+  left: 13px;
+  top: 50%;
+  z-index: 1;
+  color: var(--text-muted);
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+
+.report-search-input {
+  width: 100%;
+  padding-left: 42px !important;
+}
+
+.pagination-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 14px 0 0;
+  flex-wrap: wrap;
+}
+
+.pagination-summary,
+.pagination-page {
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 11px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-subtle);
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  background: rgba(8, 17, 31, 0.62);
+  backdrop-filter: blur(8px);
+}
+
+.modal-panel {
+  width: min(520px, 100%);
+  max-height: calc(100vh - 36px);
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow-md);
+  padding: 18px;
+}
+
+.modal-close-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 6px;
+}
+
+.modal-close-button {
+  width: 36px;
+  min-height: 36px !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+  text-transform: uppercase;
+}
+
+.dialog-card h2 {
+  margin: 0 0 10px;
+  color: var(--heading);
+  font-size: 22px;
+  line-height: 1.2;
+}
+
+.dialog-card p {
+  margin: 0 0 20px;
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.dialog-confirm-button {
+  color: #ffffff !important;
+  background: linear-gradient(135deg, var(--danger), #b91c1c) !important;
+}
+
+.dialog-card-error .dialog-confirm-button {
+  background: linear-gradient(135deg, var(--info), var(--accent)) !important;
+}
+
+.dialog-cancel-button {
+  background: var(--surface-subtle) !important;
+  color: var(--text) !important;
 }
 
 .professional-table {

@@ -1,11 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 function usePagination(data = [], itemsPerPage = 5) {
   const [currentPage, setCurrentPage] = useState(1);
 
-  const totalPages = Math.ceil(
-    data.length / itemsPerPage
-  );
+  const totalPages = Math.max(1, Math.ceil(data.length / itemsPerPage));
 
   const startIndex =
     (currentPage - 1) * itemsPerPage;
@@ -16,6 +14,12 @@ function usePagination(data = [], itemsPerPage = 5) {
     startIndex,
     endIndex
   );
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
 
   const nextPage = () => {
     if (currentPage < totalPages) {
@@ -33,6 +37,8 @@ function usePagination(data = [], itemsPerPage = 5) {
     currentPage,
     totalPages,
     currentData,
+    startIndex,
+    endIndex: Math.min(endIndex, data.length),
     nextPage,
     prevPage,
     setCurrentPage,

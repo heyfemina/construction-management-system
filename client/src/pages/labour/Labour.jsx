@@ -1,5 +1,4 @@
 import LabourForm from "../../components/labour/LabourForm";
-import AttendanceForm from "../../components/labour/AttendanceForm";
 import LabourTable from "../../components/labour/LabourTable";
 import LabourLedger from "../../components/labour/LabourLedger";
 import LabourReport from "../../components/labour/LabourReport";
@@ -25,8 +24,6 @@ function Labour() {
         }}
       >
         <LabourForm />
-
-        <AttendanceForm />
       </div>
 
       <LabourTable />

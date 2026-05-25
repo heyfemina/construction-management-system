@@ -4,6 +4,11 @@ import {
   getMaterials,
 } from "../../api/materialApi";
 import { getSites } from "../../api/siteApi";
+import ErrorDialog from "../common/ErrorDialog";
+import {
+  validatePositiveNumber,
+  validateRequired,
+} from "../../utils/formValidation";
 
 function UsageForm() {
   const [materialId, setMaterialId] = useState("");
@@ -44,8 +49,15 @@ function UsageForm() {
     e.preventDefault();
     setError("");
 
-    if (!materialId || !siteId || Number(usedQuantity) <= 0) {
-      setError("Select material, site and enter used quantity.");
+    const validationError =
+      validateRequired([
+        { label: "Material", value: materialId },
+        { label: "Site", value: siteId },
+        { label: "Used quantity", value: usedQuantity },
+      ]) || validatePositiveNumber(usedQuantity, "Used quantity");
+
+    if (validationError) {
+      setError(validationError);
       return;
     }
 
@@ -77,6 +89,7 @@ function UsageForm() {
   };
 
   return (
+    <>
     <div
       style={{
         backgroundColor: "#ffffff",
@@ -95,7 +108,7 @@ function UsageForm() {
         Material Usage
       </h2>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} noValidate>
         {error && <p style={errorStyle}>{error}</p>}
 
         <div style={{ marginBottom: "15px" }}>
@@ -169,6 +182,12 @@ function UsageForm() {
         </button>
       </form>
     </div>
+    <ErrorDialog
+      isOpen={Boolean(error)}
+      message={error}
+      onClose={() => setError("")}
+    />
+    </>
   );
 }
 

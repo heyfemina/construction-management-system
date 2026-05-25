@@ -41,6 +41,7 @@ CREATE TABLE materials (
 
 CREATE TABLE vendors (
     id SERIAL PRIMARY KEY,
+    site_id INTEGER REFERENCES sites(id) ON DELETE SET NULL,
     vendor_name VARCHAR(150) NOT NULL,
     contact_number VARCHAR(20),
     email VARCHAR(150),

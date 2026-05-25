@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
 import AuthFormShell from "../../components/auth/AuthFormShell";
 import { registerUser } from "../../services/authService";
+import { validateEmail, validateRequired } from "../../utils/formValidation";
 
 function Register() {
   const [name, setName] = useState("");
@@ -16,6 +17,24 @@ function Register() {
   const handleRegister = async (e) => {
     e.preventDefault();
     setError("");
+
+    const validationError =
+      validateRequired([
+        { label: "Name", value: name },
+        { label: "Email", value: email },
+        { label: "Password", value: password },
+      ]) || validateEmail(email);
+
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -48,7 +67,7 @@ function Register() {
         </>
       }
     >
-      <form onSubmit={handleRegister} className="login-form">
+      <form onSubmit={handleRegister} className="login-form" noValidate>
         <label>
           Name
           <input

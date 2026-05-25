@@ -3,6 +3,11 @@ import {
   createVendorPayment,
   getVendors,
 } from "../../api/vendorApi";
+import ErrorDialog from "../common/ErrorDialog";
+import {
+  validatePositiveNumber,
+  validateRequired,
+} from "../../utils/formValidation";
 
 function VendorPaymentForm() {
   const [vendorId, setVendorId] = useState("");
@@ -34,8 +39,15 @@ function VendorPaymentForm() {
     e.preventDefault();
     setError("");
 
-    if (!vendorId || Number(amount) <= 0) {
-      setError("Select vendor and enter payment amount.");
+    const validationError =
+      validateRequired([
+        { label: "Vendor", value: vendorId },
+        { label: "Payment amount", value: amount },
+        { label: "Payment method", value: method },
+      ]) || validatePositiveNumber(amount, "Payment amount");
+
+    if (validationError) {
+      setError(validationError);
       return;
     }
 
@@ -68,6 +80,7 @@ function VendorPaymentForm() {
   };
 
   return (
+    <>
     <div
       style={{
         backgroundColor: "#ffffff",
@@ -86,7 +99,7 @@ function VendorPaymentForm() {
         Vendor Payment
       </h2>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} noValidate>
         {error && <p style={errorStyle}>{error}</p>}
 
         <div style={{ marginBottom: "15px" }}>
@@ -137,6 +150,7 @@ function VendorPaymentForm() {
 
           <input
             type="text"
+            required
             value={method}
             onChange={(e) => setMethod(e.target.value)}
             placeholder="Cash / UPI / Bank"
@@ -149,6 +163,12 @@ function VendorPaymentForm() {
         </button>
       </form>
     </div>
+    <ErrorDialog
+      isOpen={Boolean(error)}
+      message={error}
+      onClose={() => setError("")}
+    />
+    </>
   );
 }
 

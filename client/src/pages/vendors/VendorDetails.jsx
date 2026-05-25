@@ -8,6 +8,11 @@ import ExcelExport from "../../components/reports/ExcelExport";
 import PDFExport from "../../components/reports/PDFExport";
 import ReportTable from "../../components/reports/ReportTable";
 import generateVendorReportPDF from "../../utils/generateVendorReportPDF";
+import {
+  validateEmail,
+  validatePhone,
+  validateRequired,
+} from "../../utils/formValidation";
 
 function VendorDetails() {
   const { id } = useParams();
@@ -89,6 +94,22 @@ function VendorDetails() {
     setSaving(true);
     setError("");
 
+    const validationError =
+      validateRequired([
+        { label: "Vendor name", value: form.vendor_name },
+        { label: "Contact number", value: form.contact_number },
+        { label: "Email", value: form.email },
+        { label: "Address", value: form.address },
+      ]) ||
+      validateEmail(form.email) ||
+      validatePhone(form.contact_number);
+
+    if (validationError) {
+      setError(validationError);
+      setSaving(false);
+      return;
+    }
+
     try {
       await updateVendor(id, form);
       setEditing(false);
@@ -153,7 +174,7 @@ function VendorDetails() {
         )}
 
         {!loading && !error && vendor && editing && (
-          <form onSubmit={handleSave} style={formStyle}>
+          <form onSubmit={handleSave} style={formStyle} noValidate>
             <Field
               label="Vendor Name"
               required
@@ -162,17 +183,20 @@ function VendorDetails() {
             />
             <Field
               label="Contact Number"
+              required
               value={form.contact_number}
               onChange={(value) => handleChange("contact_number", value)}
             />
             <Field
               label="Email"
               type="email"
+              required
               value={form.email}
               onChange={(value) => handleChange("email", value)}
             />
             <Field
               label="Address"
+              required
               value={form.address}
               onChange={(value) => handleChange("address", value)}
             />

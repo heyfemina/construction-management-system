@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
 import AuthFormShell from "../../components/auth/AuthFormShell";
 import { loginUser } from "../../services/authService";
+import { validateEmail, validateRequired } from "../../utils/formValidation";
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -15,6 +16,18 @@ function Login() {
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
+
+    const validationError =
+      validateRequired([
+        { label: "Email", value: email },
+        { label: "Password", value: password },
+      ]) || validateEmail(email);
+
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -46,7 +59,7 @@ function Login() {
         </>
       }
     >
-      <form onSubmit={handleLogin} className="login-form">
+      <form onSubmit={handleLogin} className="login-form" noValidate>
         <label>
           Email
           <input

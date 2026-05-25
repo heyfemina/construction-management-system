@@ -1,14 +1,22 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { deleteMaterial, getMaterials } from "../../services/materialService";
+import ConfirmDialog from "../common/ConfirmDialog";
+import ErrorDialog from "../common/ErrorDialog";
+import Modal from "../common/Modal";
+import Pagination from "../common/Pagination";
 import ExcelExport from "../reports/ExcelExport";
 import PDFExport from "../reports/PDFExport";
+import usePagination from "../../hooks/usePagination";
 import isConnectionError from "../../utils/isConnectionError";
 
 function MaterialTable() {
   const [materials, setMaterials] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [dialogError, setDialogError] = useState("");
+  const pagination = usePagination(materials, 10);
 
   const loadMaterials = async () => {
     try {
@@ -38,9 +46,17 @@ function MaterialTable() {
     };
   }, []);
 
-  const handleDelete = async (id) => {
-    await deleteMaterial(id);
-    loadMaterials();
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+
+    try {
+      await deleteMaterial(deleteTarget.id);
+      setDeleteTarget(null);
+      loadMaterials();
+    } catch (err) {
+      setDeleteTarget(null);
+      setDialogError(err.response?.data?.message || "Could not delete material");
+    }
   };
 
   const exportColumns = [
@@ -145,7 +161,7 @@ function MaterialTable() {
             </tr>
           )}
 
-          {!loading && !error && materials.map((material) => (
+          {!loading && !error && pagination.currentData.map((material) => (
             <tr key={material.id}>
               <td style={tableData}>{material.material_name}</td>
               <td style={tableData}>{material.site_name || "-"}</td>
@@ -159,7 +175,7 @@ function MaterialTable() {
                 <Link to={`/materials/details/${material.id}`} style={linkStyle}>
                   View
                 </Link>
-                <button type="button" onClick={() => handleDelete(material.id)}>
+                <button type="button" onClick={() => setDeleteTarget(material)}>
                   Delete
                 </button>
               </td>
@@ -167,6 +183,28 @@ function MaterialTable() {
           ))}
         </tbody>
       </table>
+      <Pagination
+        currentPage={pagination.currentPage}
+        totalPages={pagination.totalPages}
+        onNext={pagination.nextPage}
+        onPrevious={pagination.prevPage}
+        totalItems={materials.length}
+        startIndex={pagination.startIndex}
+        endIndex={pagination.endIndex}
+      />
+      <Modal isOpen={Boolean(deleteTarget)} onClose={() => setDeleteTarget(null)}>
+        <ConfirmDialog
+          title="Delete material?"
+          message={`This will delete ${deleteTarget?.material_name || "this material"}.`}
+          onConfirm={handleDelete}
+          onCancel={() => setDeleteTarget(null)}
+        />
+      </Modal>
+      <ErrorDialog
+        isOpen={Boolean(dialogError)}
+        message={dialogError}
+        onClose={() => setDialogError("")}
+      />
     </div>
   );
 }

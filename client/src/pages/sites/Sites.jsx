@@ -33,12 +33,15 @@ function Sites() {
         Site Management
       </h1>
 
+      <SiteForm />
+
       <div
         style={{
           display: "grid",
           gridTemplateColumns:
             "repeat(auto-fit,minmax(300px,1fr))",
           gap: "20px",
+          marginTop: "25px",
           marginBottom: "25px",
         }}
       >
@@ -56,8 +59,6 @@ function Sites() {
           />
         ))}
       </div>
-
-      <SiteForm />
 
       <div
         style={{

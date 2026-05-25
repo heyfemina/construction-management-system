@@ -42,9 +42,9 @@ export const getSites = async (
         GROUP BY site_id
       ) l ON l.site_id = s.id
       LEFT JOIN (
-        SELECT site_id, COUNT(DISTINCT vendor_id) AS vendor_count
-        FROM material_purchases
-        WHERE user_id = $1 AND vendor_id IS NOT NULL
+        SELECT site_id, COUNT(*) AS vendor_count
+        FROM vendors
+        WHERE user_id = $1 AND site_id IS NOT NULL
         GROUP BY site_id
       ) v ON v.site_id = s.id
       LEFT JOIN (
@@ -387,6 +387,8 @@ export const getSiteReport =
           SELECT
             v.id,
             v.vendor_name,
+            v.site_id,
+            s.site_name,
             v.contact_number,
             v.email,
             COALESCE(p.total_purchase, 0)::numeric AS total_purchase,
@@ -396,7 +398,8 @@ export const getSiteReport =
               COALESCE(pay.paid_amount, 0)
             )::numeric AS pending_amount
           FROM vendors v
-          INNER JOIN (
+          LEFT JOIN sites s ON s.id = v.site_id
+          LEFT JOIN (
             SELECT vendor_id, SUM(total_cost) AS total_purchase
             FROM material_purchases
             WHERE site_id = $1 AND user_id = $2 AND vendor_id IS NOT NULL
@@ -408,7 +411,7 @@ export const getSiteReport =
             WHERE user_id = $2
             GROUP BY vendor_id
           ) pay ON pay.vendor_id = v.id
-          WHERE v.user_id = $2
+          WHERE v.user_id = $2 AND v.site_id = $1
           ORDER BY v.vendor_name
           `,
           [id, req.user.id]

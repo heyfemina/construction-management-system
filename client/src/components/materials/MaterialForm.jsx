@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { addMaterial } from "../../services/materialService";
 import { getSites } from "../../api/siteApi";
+import ErrorDialog from "../common/ErrorDialog";
+import FieldError from "../common/FieldError";
 import isConnectionError from "../../utils/isConnectionError";
 
 function MaterialForm() {
@@ -9,6 +11,7 @@ function MaterialForm() {
   const [siteId, setSiteId] = useState("");
   const [sites, setSites] = useState([]);
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
   const loadSites = () => {
@@ -29,6 +32,19 @@ function MaterialForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+
+    const nextFieldErrors = {
+      materialName: materialName.trim() ? "" : "Material name is required",
+      unit: unit.trim() ? "" : "Unit is required",
+      siteId: siteId ? "" : "Site is required",
+    };
+
+    setFieldErrors(nextFieldErrors);
+
+    if (Object.values(nextFieldErrors).some(Boolean)) {
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -41,6 +57,7 @@ function MaterialForm() {
       setMaterialName("");
       setUnit("");
       setSiteId("");
+      setFieldErrors({});
       window.dispatchEvent(new Event("materials:changed"));
     } catch (err) {
       if (isConnectionError(err)) {
@@ -55,6 +72,7 @@ function MaterialForm() {
   };
 
   return (
+    <>
     <div
       style={{
         backgroundColor: "#ffffff",
@@ -73,7 +91,7 @@ function MaterialForm() {
         Add Material
       </h2>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} noValidate>
         {error && <p style={errorStyle}>{error}</p>}
 
         <div style={{ marginBottom: "15px" }}>
@@ -86,10 +104,12 @@ function MaterialForm() {
             onChange={(e) => {
               setMaterialName(e.target.value);
               setError("");
+              setFieldErrors((current) => ({ ...current, materialName: "" }));
             }}
             placeholder="Enter material name"
             style={inputStyle}
           />
+          <FieldError message={fieldErrors.materialName} />
         </div>
 
         <div style={{ marginBottom: "15px" }}>
@@ -102,18 +122,24 @@ function MaterialForm() {
             onChange={(e) => {
               setUnit(e.target.value);
               setError("");
+              setFieldErrors((current) => ({ ...current, unit: "" }));
             }}
             placeholder="Bag / Kg / Ton / Piece"
             style={inputStyle}
           />
+          <FieldError message={fieldErrors.unit} />
         </div>
 
         <div style={{ marginBottom: "15px" }}>
           <label>Site</label>
 
           <select
+            required
             value={siteId}
-            onChange={(e) => setSiteId(e.target.value)}
+            onChange={(e) => {
+              setSiteId(e.target.value);
+              setFieldErrors((current) => ({ ...current, siteId: "" }));
+            }}
             style={inputStyle}
           >
             <option value="">No site selected</option>
@@ -123,6 +149,7 @@ function MaterialForm() {
               </option>
             ))}
           </select>
+          <FieldError message={fieldErrors.siteId} />
         </div>
 
         <button type="submit" style={buttonStyle} disabled={loading}>
@@ -130,6 +157,12 @@ function MaterialForm() {
         </button>
       </form>
     </div>
+    <ErrorDialog
+      isOpen={Boolean(error)}
+      message={error}
+      onClose={() => setError("")}
+    />
+    </>
   );
 }
 

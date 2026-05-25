@@ -5,6 +5,12 @@ import {
 } from "../../api/materialApi";
 import { getSites } from "../../api/siteApi";
 import { getVendors } from "../../api/vendorApi";
+import ErrorDialog from "../common/ErrorDialog";
+import {
+  validateNonNegativeNumber,
+  validatePositiveNumber,
+  validateRequired,
+} from "../../utils/formValidation";
 
 function PurchaseForm() {
   const [materialId, setMaterialId] = useState("");
@@ -58,14 +64,21 @@ function PurchaseForm() {
     e.preventDefault();
     setError("");
 
-    if (
-      !materialId ||
-      !vendorId ||
-      !siteId ||
-      Number(quantity) <= 0 ||
-      Number(unitCost) <= 0
-    ) {
-      setError("Select material, vendor, site and enter quantity plus unit cost.");
+    const validationError =
+      validateRequired([
+        { label: "Material", value: materialId },
+        { label: "Vendor", value: vendorId },
+        { label: "Site", value: siteId },
+        { label: "Quantity", value: quantity },
+        { label: "Unit cost", value: unitCost },
+        { label: "Transport cost", value: transportCost },
+      ]) ||
+      validatePositiveNumber(quantity, "Quantity") ||
+      validatePositiveNumber(unitCost, "Unit cost") ||
+      validateNonNegativeNumber(transportCost, "Transport cost");
+
+    if (validationError) {
+      setError(validationError);
       return;
     }
 
@@ -78,7 +91,7 @@ function PurchaseForm() {
         site_id: siteId || null,
         quantity,
         unit_cost: unitCost,
-        transport_cost: transportCost || 0,
+        transport_cost: transportCost,
         total_cost: total,
         purchase_date: new Date().toISOString().slice(0, 10),
       });
@@ -100,6 +113,7 @@ function PurchaseForm() {
   };
 
   return (
+    <>
     <div
       style={{
         backgroundColor: "#ffffff",
@@ -118,7 +132,7 @@ function PurchaseForm() {
         Material Purchase
       </h2>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} noValidate>
         {error && <p style={errorStyle}>{error}</p>}
 
         <SelectField
@@ -205,6 +219,12 @@ function PurchaseForm() {
         </button>
       </form>
     </div>
+    <ErrorDialog
+      isOpen={Boolean(error)}
+      message={error}
+      onClose={() => setError("")}
+    />
+    </>
   );
 }
 
@@ -243,7 +263,7 @@ function InputField({ label, value, onChange, placeholder }) {
         type="number"
         min="0"
         step="0.01"
-        required={label !== "Transport Cost"}
+        required
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}

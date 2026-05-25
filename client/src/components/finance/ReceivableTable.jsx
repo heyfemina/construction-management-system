@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
 import { getFinanceData } from "../../api/financeApi";
+import Pagination from "../common/Pagination";
+import usePagination from "../../hooks/usePagination";
 import isConnectionError from "../../utils/isConnectionError";
 
 function ReceivableTable() {
   const [receivables, setReceivables] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const pagination = usePagination(receivables, 10);
 
   const loadReceivables = async () => {
     try {
@@ -78,7 +81,7 @@ function ReceivableTable() {
           {!loading && !error && receivables.length === 0 && (
             <StatusRow text="No receivables yet" />
           )}
-          {!loading && !error && receivables.map((item) => (
+          {!loading && !error && pagination.currentData.map((item) => (
             <tr key={item.id}>
               <td style={tableData}>{item.client_name || "-"}</td>
               <td style={tableData}>{item.site_name || "-"}</td>
@@ -94,6 +97,15 @@ function ReceivableTable() {
           ))}
         </tbody>
       </table>
+      <Pagination
+        currentPage={pagination.currentPage}
+        totalPages={pagination.totalPages}
+        onNext={pagination.nextPage}
+        onPrevious={pagination.prevPage}
+        totalItems={receivables.length}
+        startIndex={pagination.startIndex}
+        endIndex={pagination.endIndex}
+      />
     </div>
   );
 }
