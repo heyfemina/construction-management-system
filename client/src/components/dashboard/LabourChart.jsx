@@ -17,7 +17,7 @@ function LabourChart({ paid = 0, pending = 0 }) {
     : [{ name: "No payment data", value: 1, color: "var(--surface-subtle)" }];
 
   return (
-    <div style={cardStyle}>
+    <div className="dashboard-chart-panel" style={cardStyle}>
       <div style={headerStyle}>
         <div>
           <p style={labelStyle}>Workforce Finance</p>
@@ -26,23 +26,25 @@ function LabourChart({ paid = 0, pending = 0 }) {
       </div>
 
       <div className="premium-labour-chart-content" style={contentStyle}>
-        <ResponsiveContainer width="100%" height={260}>
-          <PieChart>
-            <Pie
-              data={chartData}
-              dataKey="value"
-              innerRadius={64}
-              outerRadius={100}
-              paddingAngle={4}
-              isAnimationActive={hasData}
-            >
-              {chartData.map((entry) => (
-                <Cell key={entry.name} fill={entry.color} />
-              ))}
-            </Pie>
-            {hasData && <Tooltip content={<LabourTooltip />} />}
-          </PieChart>
-        </ResponsiveContainer>
+        <div style={pieShellStyle}>
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart margin={pieChartMargin}>
+              <Pie
+                data={chartData}
+                dataKey="value"
+                innerRadius="54%"
+                outerRadius="78%"
+                paddingAngle={4}
+                isAnimationActive={hasData}
+              >
+                {chartData.map((entry) => (
+                  <Cell key={entry.name} fill={entry.color} />
+                ))}
+              </Pie>
+              {hasData && <Tooltip content={<LabourTooltip />} />}
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
 
         <div style={legendStyle}>
           {data.map((item) => (
@@ -81,6 +83,11 @@ const cardStyle = {
   borderRadius: "8px",
   border: "1px solid var(--border)",
   boxShadow: "var(--shadow-sm)",
+  height: "100%",
+  minHeight: "380px",
+  display: "flex",
+  flexDirection: "column",
+  minWidth: 0,
 };
 
 const headerStyle = {
@@ -107,15 +114,32 @@ const titleStyle = {
 
 const contentStyle = {
   display: "grid",
-  gridTemplateColumns: "minmax(240px, 1fr) minmax(220px, 0.7fr)",
-  gap: "18px",
+  gridTemplateColumns: "minmax(0, 1fr)",
+  gridTemplateRows: "minmax(0, 1fr) auto",
+  gap: "14px",
   alignItems: "center",
+  flex: 1,
+  minHeight: "250px",
+};
+
+const pieShellStyle = {
+  width: "100%",
+  minWidth: 0,
+  minHeight: "190px",
+  height: "100%",
+};
+
+const pieChartMargin = {
+  top: 8,
+  right: 8,
+  bottom: 8,
+  left: 8,
 };
 
 const legendStyle = {
   display: "flex",
   flexDirection: "column",
-  gap: "12px",
+  gap: "10px",
 };
 
 const legendItemStyle = {
@@ -123,7 +147,7 @@ const legendItemStyle = {
   gridTemplateColumns: "12px 1fr auto",
   gap: "10px",
   alignItems: "center",
-  padding: "14px",
+  padding: "12px",
   borderRadius: "8px",
   backgroundColor: "var(--surface-subtle)",
   color: "var(--text)",

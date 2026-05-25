@@ -10,7 +10,7 @@ import {
 
 function MaterialChart({ data = [] }) {
   return (
-    <div style={cardStyle}>
+    <div className="dashboard-chart-panel" style={cardStyle}>
       <div style={headerStyle}>
         <div>
           <p style={labelStyle}>Material Flow</p>
@@ -20,7 +20,7 @@ function MaterialChart({ data = [] }) {
       </div>
 
       <div style={chartShellStyle}>
-        <ResponsiveContainer width="100%" height={180}>
+        <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data}>
             <CartesianGrid stroke="var(--border)" vertical={false} />
             <XAxis
@@ -57,10 +57,15 @@ function MaterialChart({ data = [] }) {
 
 const cardStyle = {
   backgroundColor: "var(--surface)",
-  padding: "14px",
+  padding: "22px",
   borderRadius: "8px",
   border: "1px solid var(--border)",
   boxShadow: "var(--shadow-sm)",
+  height: "100%",
+  minHeight: "380px",
+  display: "flex",
+  flexDirection: "column",
+  minWidth: 0,
 };
 
 const headerStyle = {
@@ -68,7 +73,7 @@ const headerStyle = {
   justifyContent: "space-between",
   alignItems: "flex-start",
   gap: "14px",
-  marginBottom: "6px",
+  marginBottom: "14px",
 };
 
 const labelStyle = {
@@ -81,7 +86,7 @@ const labelStyle = {
 
 const titleStyle = {
   margin: 0,
-  fontSize: "18px",
+  fontSize: "21px",
   color: "var(--heading)",
 };
 
@@ -107,7 +112,8 @@ const tooltipLabelStyle = {
 
 const chartShellStyle = {
   position: "relative",
-  minHeight: "180px",
+  flex: 1,
+  minHeight: "250px",
 };
 
 const emptyStyle = {

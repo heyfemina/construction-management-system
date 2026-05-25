@@ -868,15 +868,14 @@ function Dashboard() {
           .premium-dashboard-chart-card {
             width: 100%;
             min-width: 0;
-            height: auto;
-            min-height: unset;
-            display: block;
-            overflow: hidden;
+            height: 100%;
+            display: flex;
           }
 
           .premium-dashboard-chart-card > * {
             width: 100%;
             min-width: 0;
+            height: 100%;
           }
 
           .premium-dashboard-chart-card canvas,
@@ -914,6 +913,10 @@ function Dashboard() {
 
             .premium-dashboard-chart-grid {
               grid-template-columns: 1fr;
+            }
+
+            .dashboard-chart-panel {
+              min-height: 360px !important;
             }
           }
 
@@ -1377,13 +1380,8 @@ const taskDotStyle = {
 };
 
 const chartCardStyle = {
-  backgroundColor: "var(--surface)",
-  border: "1px solid var(--border)",
-  borderRadius: "8px",
-  padding: "14px",
-  boxShadow: "var(--shadow-sm)",
   minWidth: 0,
-  height: "fit-content",
+  height: "100%",
 };
 
 export default Dashboard;

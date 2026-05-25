@@ -18,6 +18,8 @@ if (!databaseUrl) {
 const createPool = (connectionString) =>
   new Pool({
     connectionString,
+    connectionTimeoutMillis: 5000,
+    idleTimeoutMillis: 30000,
 
     ssl: {
       rejectUnauthorized: false,
