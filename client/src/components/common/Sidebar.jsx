@@ -55,7 +55,7 @@ function Sidebar({ isOpen = false, onClose }) {
         <div className="sidebar-logo">CP</div>
         <div className="sidebar-brand-copy">
           <h1>ConstructPro</h1>
-          <p>Project Management</p>
+          {/* <p>Project Management</p> */}
         </div>
 
         <button
