@@ -275,6 +275,43 @@ a {
   color: var(--accent-strong);
 }
 
+.sidebar-guide {
+  padding: 0 14px 14px;
+}
+
+.sidebar-guide-button {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid rgba(45, 212, 191, 0.28);
+  border-radius: var(--radius);
+  background: rgba(15, 118, 110, 0.18);
+  color: #f8fafc;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  font-size: 14px;
+  font-weight: 760;
+  text-align: left;
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease;
+}
+
+.sidebar-guide-button svg {
+  color: var(--accent-strong);
+  flex: 0 0 auto;
+}
+
+.sidebar-guide-button:hover {
+  background: rgba(15, 118, 110, 0.28);
+  border-color: rgba(45, 212, 191, 0.42);
+  color: #ffffff;
+}
+
 .sidebar-user {
   margin: auto 14px 14px;
   padding: 13px;

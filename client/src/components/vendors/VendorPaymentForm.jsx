@@ -6,7 +6,6 @@ import {
 
 function VendorPaymentForm() {
   const [vendorId, setVendorId] = useState("");
-  const [recipientEmail, setRecipientEmail] = useState("");
   const [amount, setAmount] = useState("");
   const [method, setMethod] = useState("");
   const [vendors, setVendors] = useState([]);
@@ -55,11 +54,9 @@ function VendorPaymentForm() {
         pending_amount: 0,
         payment_date: new Date().toISOString().slice(0, 10),
         payment_method: method,
-        recipient_email: recipientEmail,
       });
 
       setVendorId("");
-      setRecipientEmail("");
       setAmount("");
       setMethod("");
       window.dispatchEvent(new Event("vendors:changed"));
@@ -98,13 +95,8 @@ function VendorPaymentForm() {
             required
             value={vendorId}
             onChange={(e) => {
-              const nextVendorId = e.target.value;
-              const vendor = vendors.find(
-                (item) => String(item.id) === nextVendorId
-              );
-
-              setVendorId(nextVendorId);
-              setRecipientEmail(vendor?.email || "");
+              setVendorId(e.target.value);
+              setError("");
             }}
             style={inputStyle}
           >
@@ -124,17 +116,6 @@ function VendorPaymentForm() {
             {selectedVendor.pending_amount || 0}
           </p>
         )}
-
-        <div style={{ marginBottom: "15px" }}>
-          <label>Vendor Email</label>
-          <input
-            type="email"
-            value={recipientEmail}
-            onChange={(e) => setRecipientEmail(e.target.value)}
-            placeholder="Optional email receipt"
-            style={inputStyle}
-          />
-        </div>
 
         <div style={{ marginBottom: "15px" }}>
           <label>Payment Amount</label>

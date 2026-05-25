@@ -6,7 +6,6 @@ import {
 
 function LabourPaymentForm() {
   const [labourId, setLabourId] = useState("");
-  const [recipientEmail, setRecipientEmail] = useState("");
   const [amount, setAmount] = useState("");
   const [method, setMethod] = useState("");
   const [labours, setLabours] = useState([]);
@@ -56,11 +55,9 @@ function LabourPaymentForm() {
           Number(selectedLabour?.pending_amount || 0) - Number(amount || 0),
         payment_date: new Date().toISOString().slice(0, 10),
         payment_method: method,
-        recipient_email: recipientEmail,
       });
 
       setLabourId("");
-      setRecipientEmail("");
       setAmount("");
       setMethod("");
       window.dispatchEvent(new Event("labours:changed"));
@@ -90,12 +87,8 @@ function LabourPaymentForm() {
             value={labourId}
             onChange={(e) => {
               const nextLabourId = e.target.value;
-              const labour = labours.find(
-                (item) => String(item.id) === String(nextLabourId)
-              );
-
               setLabourId(nextLabourId);
-              setRecipientEmail(labour?.email || "");
+              setError("");
             }}
             style={inputStyle}
           >
@@ -115,17 +108,6 @@ function LabourPaymentForm() {
             {selectedLabour.pending_amount || 0}
           </p>
         )}
-
-        <div style={{ marginBottom: "15px" }}>
-          <label>Labour Email</label>
-          <input
-            type="email"
-            value={recipientEmail}
-            onChange={(e) => setRecipientEmail(e.target.value)}
-            placeholder="Optional email receipt"
-            style={inputStyle}
-          />
-        </div>
 
         <div style={{ marginBottom: "15px" }}>
           <label>Paid Amount</label>

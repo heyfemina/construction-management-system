@@ -1,6 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import {
   BarChart3,
+  BookOpen,
   Briefcase,
   Building2,
   CalendarCheck,
@@ -12,6 +13,7 @@ import {
   Users,
   X,
 } from "lucide-react";
+import openSoftwareGuidePDF from "../../utils/openSoftwareGuidePDF";
 
 const menuGroups = [
   {
@@ -41,6 +43,11 @@ const menuGroups = [
 
 function Sidebar({ isOpen = false, onClose }) {
   const location = useLocation();
+
+  const handleOpenGuide = () => {
+    openSoftwareGuidePDF();
+    onClose?.();
+  };
 
   return (
     <aside className={`sidebar ${isOpen ? "sidebar-open" : ""}`}>
@@ -86,6 +93,17 @@ function Sidebar({ isOpen = false, onClose }) {
           </div>
         ))}
       </nav>
+
+      <div className="sidebar-guide">
+        <button
+          type="button"
+          className="sidebar-guide-button"
+          onClick={handleOpenGuide}
+        >
+          <BookOpen size={18} strokeWidth={2.2} />
+          <span>How to Use</span>
+        </button>
+      </div>
 
       <div className="sidebar-user">
         <div className="sidebar-user-avatar">A</div>

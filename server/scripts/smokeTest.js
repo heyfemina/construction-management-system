@@ -203,7 +203,6 @@ const run = async () => {
         pending_amount: 0,
         payment_date: new Date().toISOString().slice(0, 10),
         payment_method: "Cash",
-        recipient_email: `labour-${stamp}@example.com`,
       }),
     },
     token
@@ -271,7 +270,6 @@ const run = async () => {
         pending_amount: 1600,
         payment_date: new Date().toISOString().slice(0, 10),
         payment_method: "Cash",
-        recipient_email: `vendor-${stamp}@example.com`,
       }),
     },
     token

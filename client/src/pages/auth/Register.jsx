@@ -20,8 +20,8 @@ function Register() {
 
     try {
       const data = await registerUser({
-        name,
-        email,
+        name: name.trim(),
+        email: email.trim().toLowerCase(),
         password,
       });
 

@@ -1,5 +1,4 @@
 import pool from "../config/db.js";
-import { sendPaymentConfirmationEmail } from "../services/emailService.js";
 
 export const getLabours =
   async (req, res) => {
@@ -544,19 +543,7 @@ export const addLabourPayment = async (req, res) => {
       pending_amount,
       payment_date,
       payment_method,
-      recipient_email,
     } = req.body;
-
-    const labour = labour_id
-      ? await pool.query(
-          `
-          SELECT labour_name
-          FROM labours
-          WHERE id = $1 AND user_id = $2
-          `,
-          [labour_id, req.user.id]
-        )
-      : { rows: [] };
 
     const result = await pool.query(
       `
@@ -578,37 +565,9 @@ export const addLabourPayment = async (req, res) => {
       ]
     );
 
-    let email = {
-      sent: false,
-      skipped: true,
-      reason: "Email notification was not attempted",
-    };
-
-    if (recipient_email) {
-      try {
-        email = await sendPaymentConfirmationEmail({
-          to: recipient_email,
-          recipientName: labour.rows[0]?.labour_name,
-          recipientType: "Labour",
-          amount: result.rows[0].paid_amount,
-          totalAmount: result.rows[0].total_amount,
-          pendingAmount: result.rows[0].pending_amount,
-          paymentDate: result.rows[0].payment_date,
-          paymentMethod: result.rows[0].payment_method,
-          reference: `Labour Payment #${result.rows[0].id}`,
-        });
-      } catch (emailError) {
-        email = {
-          sent: false,
-          error: emailError.message,
-        };
-      }
-    }
-
     res.status(201).json({
       success: true,
       payment: result.rows[0],
-      email,
     });
   } catch (error) {
     res.status(500).json({

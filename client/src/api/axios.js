@@ -6,12 +6,15 @@ const hostedApiBaseUrl =
 
 const isLocalHost =
   window.location.hostname === "localhost" ||
-  window.location.hostname === "127.0.0.1";
+  window.location.hostname === "127.0.0.1" ||
+  window.location.hostname === "::1";
 
 const API = axios.create({
   baseURL:
     import.meta.env.VITE_API_BASE_URL ||
-    (isLocalHost ? localApiBaseUrl : hostedApiBaseUrl),
+    (import.meta.env.DEV || isLocalHost
+      ? localApiBaseUrl
+      : hostedApiBaseUrl),
   timeout: 15000,
 });
 

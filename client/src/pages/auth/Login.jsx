@@ -19,7 +19,7 @@ function Login() {
 
     try {
       const data = await loginUser({
-        email,
+        email: email.trim().toLowerCase(),
         password,
       });
 

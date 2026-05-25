@@ -7,6 +7,8 @@ const toPublicUser = (user) => {
   return publicUser;
 };
 
+const normalizeEmail = (email = "") => email.trim().toLowerCase();
+
 export const registerUser =
   async (req, res) => {
     try {
@@ -23,13 +25,23 @@ export const registerUser =
         });
       }
 
+      const cleanName = name.trim();
+      const cleanEmail = normalizeEmail(email);
+
+      if (!cleanName || !cleanEmail || !password.trim()) {
+        return res.status(400).json({
+          success: false,
+          message: "Name, email and password are required",
+        });
+      }
+
       const userExists =
         await pool.query(
           `
         SELECT * FROM users
         WHERE email = $1
         `,
-          [email]
+          [cleanEmail]
         );
 
       if (
@@ -38,7 +50,7 @@ export const registerUser =
         return res.status(400).json({
           success: false,
           message:
-            "User already exists",
+            "Admin account already exists. Please login with the saved password.",
         });
       }
 
@@ -56,8 +68,8 @@ export const registerUser =
         RETURNING *
         `,
           [
-            name,
-            email,
+            cleanName,
+            cleanEmail,
             hashedPassword,
             "admin",
           ]
@@ -93,13 +105,15 @@ export const loginUser = async (
       });
     }
 
+    const cleanEmail = normalizeEmail(email);
+
     const result =
       await pool.query(
         `
       SELECT * FROM users
       WHERE email = $1
       `,
-        [email]
+        [cleanEmail]
       );
 
     if (
@@ -107,7 +121,7 @@ export const loginUser = async (
     ) {
       return res.status(400).json({
         success: false,
-        message: "Invalid email",
+        message: "Invalid email or password",
       });
     }
 
@@ -123,7 +137,7 @@ export const loginUser = async (
       return res.status(400).json({
         success: false,
         message:
-          "Invalid password",
+          "Invalid email or password",
       });
     }
 
