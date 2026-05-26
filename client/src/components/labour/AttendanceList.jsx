@@ -66,13 +66,18 @@ function AttendanceList() {
       const key = item.attendance_date
         ? new Date(item.attendance_date).toISOString().slice(0, 10)
         : "No date";
+      const current = counts.get(key) || { workers: 0, payment: 0 };
 
-      counts.set(key, (counts.get(key) || 0) + 1);
+      counts.set(key, {
+        workers: current.workers + 1,
+        payment: current.payment + Number(item.attendance_payment || 0),
+      });
     });
 
-    return Array.from(counts.entries()).map(([date, workers]) => ({
+    return Array.from(counts.entries()).map(([date, summary]) => ({
       date,
-      workers,
+      workers: summary.workers,
+      payment: summary.payment,
     }));
   }, [filteredAttendance]);
 
@@ -122,7 +127,9 @@ function AttendanceList() {
         {dailyCounts.slice(0, 6).map((item) => (
           <div key={item.date} style={summaryCardStyle}>
             <strong>{formatDate(item.date)}</strong>
-            <span>{item.workers} worker(s)</span>
+            <span>
+              {item.workers} worker(s) / Rs. {formatNumber(item.payment)}
+            </span>
           </div>
         ))}
       </div>
@@ -131,9 +138,11 @@ function AttendanceList() {
         <table style={tableStyle}>
           <thead>
             <tr>
+              <th style={tableHead}>Day</th>
               <th style={tableHead}>Date</th>
               <th style={tableHead}>Labour Name</th>
               <th style={tableHead}>Site</th>
+              <th style={tableHead}>Payment</th>
               <th style={tableHead}>Status</th>
             </tr>
           </thead>
@@ -149,9 +158,15 @@ function AttendanceList() {
               !error &&
               filteredAttendance.map((item) => (
                 <tr key={item.id}>
+                  <td style={tableData}>
+                    {formatDay(item.attendance_day, item.attendance_date)}
+                  </td>
                   <td style={tableData}>{formatDate(item.attendance_date)}</td>
                   <td style={tableData}>{item.labour_name || "-"}</td>
                   <td style={tableData}>{item.site_name || "-"}</td>
+                  <td style={tableData}>
+                    Rs. {formatNumber(item.attendance_payment)}
+                  </td>
                   <td style={tableData}>{item.status || "Present"}</td>
                 </tr>
               ))}
@@ -165,11 +180,28 @@ function AttendanceList() {
 function StatusRow({ text }) {
   return (
     <tr>
-      <td style={tableData} colSpan="4">
+      <td style={tableData} colSpan="6">
         {text}
       </td>
     </tr>
   );
+}
+
+function formatDay(day, value) {
+  const cleanedDay = String(day || "").trim();
+
+  if (cleanedDay) return cleanedDay;
+  if (!value) return "-";
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "-";
+  }
+
+  return date.toLocaleDateString("en-IN", {
+    weekday: "long",
+  });
 }
 
 function formatDate(value) {
@@ -185,6 +217,12 @@ function formatDate(value) {
     day: "2-digit",
     month: "short",
     year: "numeric",
+  });
+}
+
+function formatNumber(value) {
+  return Number(value || 0).toLocaleString("en-IN", {
+    maximumFractionDigits: 2,
   });
 }
 

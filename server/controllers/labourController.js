@@ -10,10 +10,20 @@ export const getLabours =
           l.*,
           s.site_name,
           COALESCE(a.attendance_count, 0)::int AS attendance_count,
-          COALESCE(w.total_wage, 0)::numeric AS total_wage,
+          (
+            CASE
+              WHEN COALESCE(w.total_wage, 0) > 0
+              THEN COALESCE(w.total_wage, 0)
+              ELSE COALESCE(a.attendance_count, 0) * COALESCE(l.daily_wage, 0)
+            END
+          )::numeric AS total_wage,
           COALESCE(pay.paid_amount, 0)::numeric AS paid_amount,
           (
-            COALESCE(w.total_wage, 0) -
+            CASE
+              WHEN COALESCE(w.total_wage, 0) > 0
+              THEN COALESCE(w.total_wage, 0)
+              ELSE COALESCE(a.attendance_count, 0) * COALESCE(l.daily_wage, 0)
+            END -
             COALESCE(pay.paid_amount, 0)
           )::numeric AS pending_amount
         FROM labours l
@@ -116,10 +126,20 @@ export const getSingleLabour = async (req, res) => {
         l.*,
         s.site_name,
         COALESCE(a.attendance_count, 0)::int AS attendance_count,
-        COALESCE(w.total_wage, 0)::numeric AS total_wage,
+        (
+          CASE
+            WHEN COALESCE(w.total_wage, 0) > 0
+            THEN COALESCE(w.total_wage, 0)
+            ELSE COALESCE(a.attendance_count, 0) * COALESCE(l.daily_wage, 0)
+          END
+        )::numeric AS total_wage,
         COALESCE(pay.paid_amount, 0)::numeric AS paid_amount,
         (
-          COALESCE(w.total_wage, 0) -
+          CASE
+            WHEN COALESCE(w.total_wage, 0) > 0
+            THEN COALESCE(w.total_wage, 0)
+            ELSE COALESCE(a.attendance_count, 0) * COALESCE(l.daily_wage, 0)
+          END -
           COALESCE(pay.paid_amount, 0)
         )::numeric AS pending_amount
       FROM labours l
@@ -254,7 +274,16 @@ export const getLabourActivity =
           SELECT
             a.*,
             l.labour_name,
-            s.site_name
+            l.daily_wage,
+            s.site_name,
+            TO_CHAR(a.attendance_date, 'Day') AS attendance_day,
+            (
+              CASE
+                WHEN LOWER(COALESCE(a.status, 'present')) = 'present'
+                THEN COALESCE(l.daily_wage, 0)
+                ELSE 0
+              END
+            )::numeric AS attendance_payment
           FROM attendance a
           LEFT JOIN labours l ON l.id = a.labour_id
           LEFT JOIN sites s ON s.id = a.site_id
@@ -459,6 +488,25 @@ export const addAttendance = async (req, res) => {
       attendance_date,
       status,
     } = req.body;
+
+    const duplicate = await pool.query(
+      `
+      SELECT id
+      FROM attendance
+      WHERE labour_id = $1
+        AND attendance_date = $2
+        AND user_id = $3
+      LIMIT 1
+      `,
+      [labour_id || null, attendance_date, req.user.id]
+    );
+
+    if (duplicate.rows[0]) {
+      return res.status(409).json({
+        success: false,
+        message: "Attendance already marked for this labour on this date",
+      });
+    }
 
     const result = await pool.query(
       `

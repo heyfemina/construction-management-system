@@ -117,16 +117,19 @@ function PurchaseForm() {
     <div
       style={{
         backgroundColor: "#ffffff",
-        padding: "25px",
+        padding: "22px",
         borderRadius: "12px",
-        marginTop: "20px",
+        border: "1px solid #e5e7eb",
+        boxShadow: "0 8px 24px rgba(15,23,42,0.06)",
+        height: "100%",
+        boxSizing: "border-box",
       }}
     >
       <h2
         style={{
           fontSize: "24px",
           fontWeight: "700",
-          marginBottom: "20px",
+          margin: "0 0 18px",
         }}
       >
         Material Purchase
@@ -155,27 +158,29 @@ function PurchaseForm() {
           }))}
         />
 
-        <SelectField
-          label="Vendor"
-          required
-          value={vendorId}
-          onChange={setVendorId}
-          options={vendors.map((vendor) => ({
-            value: vendor.id,
-            label: vendor.vendor_name,
-          }))}
-        />
+        <div style={twoColumnGridStyle}>
+          <SelectField
+            label="Vendor"
+            required
+            value={vendorId}
+            onChange={setVendorId}
+            options={vendors.map((vendor) => ({
+              value: vendor.id,
+              label: vendor.vendor_name,
+            }))}
+          />
 
-        <SelectField
-          label="Site"
-          required
-          value={siteId}
-          onChange={setSiteId}
-          options={sites.map((site) => ({
-            value: site.id,
-            label: site.site_name,
-          }))}
-        />
+          <SelectField
+            label="Site"
+            required
+            value={siteId}
+            onChange={setSiteId}
+            options={sites.map((site) => ({
+              value: site.id,
+              label: site.site_name,
+            }))}
+          />
+        </div>
 
         {selectedMaterial?.unit && (
           <p style={hintStyle}>
@@ -183,34 +188,30 @@ function PurchaseForm() {
           </p>
         )}
 
-        <InputField
-          label="Quantity"
-          value={quantity}
-          onChange={setQuantity}
-          placeholder="Enter quantity"
-        />
+        <div style={threeColumnGridStyle}>
+          <InputField
+            label="Quantity"
+            value={quantity}
+            onChange={setQuantity}
+            placeholder="Enter quantity"
+          />
 
-        <InputField
-          label="Unit Cost"
-          value={unitCost}
-          onChange={setUnitCost}
-          placeholder="Enter unit cost"
-        />
+          <InputField
+            label="Unit Cost"
+            value={unitCost}
+            onChange={setUnitCost}
+            placeholder="Enter unit cost"
+          />
 
-        <InputField
-          label="Transport Cost"
-          value={transportCost}
-          onChange={setTransportCost}
-          placeholder="Enter transport cost"
-        />
+          <InputField
+            label="Transport Cost"
+            value={transportCost}
+            onChange={setTransportCost}
+            placeholder="Enter transport cost"
+          />
+        </div>
 
-        <div
-          style={{
-            marginBottom: "20px",
-            fontSize: "20px",
-            fontWeight: "700",
-          }}
-        >
+        <div className="material-total-cost">
           Total Cost: Rs. {total}
         </div>
 
@@ -236,8 +237,8 @@ function SelectField({
   required = false,
 }) {
   return (
-    <div style={{ marginBottom: "15px" }}>
-      <label>{label}</label>
+    <div style={fieldStyle}>
+      <label style={labelStyle}>{label}</label>
       <select
         required={required}
         value={value}
@@ -257,8 +258,8 @@ function SelectField({
 
 function InputField({ label, value, onChange, placeholder }) {
   return (
-    <div style={{ marginBottom: "15px" }}>
-      <label>{label}</label>
+    <div style={fieldStyle}>
+      <label style={labelStyle}>{label}</label>
       <input
         type="number"
         min="0"
@@ -275,10 +276,34 @@ function InputField({ label, value, onChange, placeholder }) {
 
 const inputStyle = {
   width: "100%",
+  boxSizing: "border-box",
   padding: "12px",
   marginTop: "5px",
   borderRadius: "8px",
   border: "1px solid #d1d5db",
+};
+
+const fieldStyle = {
+  marginBottom: "15px",
+};
+
+const twoColumnGridStyle = {
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+  gap: "14px",
+};
+
+const threeColumnGridStyle = {
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
+  gap: "14px",
+};
+
+const labelStyle = {
+  display: "block",
+  color: "#374151",
+  fontWeight: "700",
+  fontSize: "14px",
 };
 
 const buttonStyle = {

@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react";
-import { addMaterial } from "../../services/materialService";
+import { addMaterial, updateMaterial } from "../../services/materialService";
 import { getSites } from "../../api/siteApi";
 import ErrorDialog from "../common/ErrorDialog";
 import FieldError from "../common/FieldError";
 import isConnectionError from "../../utils/isConnectionError";
 
-function MaterialForm() {
-  const [materialName, setMaterialName] = useState("");
-  const [unit, setUnit] = useState("");
-  const [siteId, setSiteId] = useState("");
+function MaterialForm({ material = null, onSaved }) {
+  const isEdit = Boolean(material?.id);
+  const [materialName, setMaterialName] = useState(material?.material_name || "");
+  const [unit, setUnit] = useState(material?.unit || "");
+  const [siteId, setSiteId] = useState(material?.site_id ? String(material.site_id) : "");
   const [sites, setSites] = useState([]);
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState({});
@@ -29,6 +30,13 @@ function MaterialForm() {
     };
   }, []);
 
+  useEffect(() => {
+    setMaterialName(material?.material_name || "");
+    setUnit(material?.unit || "");
+    setSiteId(material?.site_id ? String(material.site_id) : "");
+    setFieldErrors({});
+  }, [material]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -48,17 +56,26 @@ function MaterialForm() {
     setLoading(true);
 
     try {
-      await addMaterial({
+      const payload = {
         site_id: siteId || null,
         material_name: materialName,
         unit,
-      });
+      };
 
-      setMaterialName("");
-      setUnit("");
-      setSiteId("");
+      if (isEdit) {
+        await updateMaterial(material.id, payload);
+      } else {
+        await addMaterial(payload);
+      }
+
+      if (!isEdit) {
+        setMaterialName("");
+        setUnit("");
+        setSiteId("");
+      }
       setFieldErrors({});
       window.dispatchEvent(new Event("materials:changed"));
+      onSaved?.();
     } catch (err) {
       if (isConnectionError(err)) {
         setError("");
@@ -76,26 +93,29 @@ function MaterialForm() {
     <div
       style={{
         backgroundColor: "#ffffff",
-        padding: "25px",
+        padding: "22px",
         borderRadius: "12px",
-        boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+        border: "1px solid #e5e7eb",
+        boxShadow: "0 8px 24px rgba(15,23,42,0.06)",
+        height: "100%",
+        boxSizing: "border-box",
       }}
     >
       <h2
         style={{
           fontSize: "24px",
           fontWeight: "700",
-          marginBottom: "20px",
+          margin: "0 0 18px",
         }}
       >
-        Add Material
+        {isEdit ? "Edit Material" : "Add Material"}
       </h2>
 
       <form onSubmit={handleSubmit} noValidate>
         {error && <p style={errorStyle}>{error}</p>}
 
         <div style={{ marginBottom: "15px" }}>
-          <label>Material Name</label>
+          <label style={labelStyle}>Material Name</label>
 
           <input
             type="text"
@@ -113,7 +133,7 @@ function MaterialForm() {
         </div>
 
         <div style={{ marginBottom: "15px" }}>
-          <label>Unit</label>
+          <label style={labelStyle}>Unit</label>
 
           <input
             type="text"
@@ -131,7 +151,7 @@ function MaterialForm() {
         </div>
 
         <div style={{ marginBottom: "15px" }}>
-          <label>Site</label>
+          <label style={labelStyle}>Site</label>
 
           <select
             required
@@ -153,7 +173,7 @@ function MaterialForm() {
         </div>
 
         <button type="submit" style={buttonStyle} disabled={loading}>
-          {loading ? "Saving..." : "Save Material"}
+          {loading ? "Saving..." : isEdit ? "Update Material" : "Save Material"}
         </button>
       </form>
     </div>
@@ -168,10 +188,18 @@ function MaterialForm() {
 
 const inputStyle = {
   width: "100%",
+  boxSizing: "border-box",
   padding: "12px",
   marginTop: "5px",
   borderRadius: "8px",
   border: "1px solid #d1d5db",
+};
+
+const labelStyle = {
+  display: "block",
+  color: "#374151",
+  fontWeight: "700",
+  fontSize: "14px",
 };
 
 const buttonStyle = {

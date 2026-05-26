@@ -16,6 +16,7 @@ function AttendanceForm() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState({});
+  const selectedDay = formatDay(date);
 
   const loadOptions = () => {
     Promise.all([getLabours(), getSites()])
@@ -154,6 +155,7 @@ function AttendanceForm() {
             }}
             style={inputStyle}
           />
+          {selectedDay && <p style={dayStyle}>Day: {selectedDay}</p>}
           <FieldError message={fieldErrors.date} />
         </div>
 
@@ -169,6 +171,20 @@ function AttendanceForm() {
     />
     </>
   );
+}
+
+function formatDay(value) {
+  if (!value) return "";
+
+  const selectedDate = new Date(value);
+
+  if (Number.isNaN(selectedDate.getTime())) {
+    return "";
+  }
+
+  return selectedDate.toLocaleDateString("en-IN", {
+    weekday: "long",
+  });
 }
 
 const inputStyle = {
@@ -187,6 +203,12 @@ const buttonStyle = {
   border: "none",
   borderRadius: "8px",
   cursor: "pointer",
+  fontWeight: "600",
+};
+
+const dayStyle = {
+  margin: "6px 0 0",
+  color: "#374151",
   fontWeight: "600",
 };
 

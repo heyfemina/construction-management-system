@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { deleteLabour, getLabours } from "../../services/labourService";
 import ConfirmDialog from "../common/ConfirmDialog";
 import ErrorDialog from "../common/ErrorDialog";
@@ -136,6 +137,9 @@ function LabourTable() {
                 <td style={tableData}>Rs. {labour.total_wage || 0}</td>
                 <td style={tableData}>Rs. {labour.pending_amount || 0}</td>
                 <td style={tableData}>
+                  <Link to={`/labour/edit/${labour.id}`} style={linkStyle}>
+                    Edit
+                  </Link>
                   <button type="button" onClick={() => setDeleteTarget(labour)}>
                     Delete
                   </button>
@@ -204,6 +208,13 @@ const tableHead = {
 const tableData = {
   borderBottom: "1px solid #e5e7eb",
   padding: "12px",
+};
+
+const linkStyle = {
+  marginRight: "10px",
+  color: "#2563eb",
+  fontWeight: "600",
+  textDecoration: "none",
 };
 
 export default LabourTable;

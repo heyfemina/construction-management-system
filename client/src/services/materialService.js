@@ -6,9 +6,24 @@ export const getMaterials = async () => {
   return response.data;
 };
 
+export const getMaterial = async (id) => {
+  const response = await materialApi.get(`/${id}`);
+
+  return response.data;
+};
+
 export const addMaterial = async (data) => {
   const response = await materialApi.post(
     "/",
+    data
+  );
+
+  return response.data;
+};
+
+export const updateMaterial = async (id, data) => {
+  const response = await materialApi.put(
+    `/${id}`,
     data
   );
 

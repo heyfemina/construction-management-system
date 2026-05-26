@@ -137,6 +137,7 @@ function MaterialTable() {
             <th style={tableHead}>Used</th>
             <th style={tableHead}>Remaining</th>
             <th style={tableHead}>Cost / Unit</th>
+            <th style={tableHead}>Transport Cost</th>
             <th style={tableHead}>Total Cost</th>
             <th style={tableHead}>Action</th>
           </tr>
@@ -145,19 +146,19 @@ function MaterialTable() {
         <tbody>
           {loading && (
             <tr>
-              <td style={tableData} colSpan="9">Loading...</td>
+              <td style={tableData} colSpan="10">Loading...</td>
             </tr>
           )}
 
           {!loading && error && (
             <tr>
-              <td style={tableData} colSpan="9">{error}</td>
+              <td style={tableData} colSpan="10">{error}</td>
             </tr>
           )}
 
           {!loading && !error && materials.length === 0 && (
             <tr>
-              <td style={tableData} colSpan="9">No materials yet</td>
+              <td style={tableData} colSpan="10">No materials yet</td>
             </tr>
           )}
 
@@ -170,10 +171,14 @@ function MaterialTable() {
               <td style={tableData}>{material.total_used || 0}</td>
               <td style={tableData}>{material.remaining_stock || 0}</td>
               <td style={tableData}>Rs. {formatNumber(material.avg_unit_cost)}</td>
+              <td style={tableData}>Rs. {formatNumber(material.transport_cost)}</td>
               <td style={tableData}>Rs. {formatNumber(material.total_cost)}</td>
               <td style={tableData}>
                 <Link to={`/materials/details/${material.id}`} style={linkStyle}>
                   View
+                </Link>
+                <Link to={`/materials/edit/${material.id}`} style={linkStyle}>
+                  Edit
                 </Link>
                 <button type="button" onClick={() => setDeleteTarget(material)}>
                   Delete

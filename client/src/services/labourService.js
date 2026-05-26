@@ -6,9 +6,24 @@ export const getLabours = async () => {
   return response.data;
 };
 
+export const getLabour = async (id) => {
+  const response = await labourApi.get(`/${id}`);
+
+  return response.data;
+};
+
 export const addLabour = async (data) => {
   const response = await labourApi.post(
     "/",
+    data
+  );
+
+  return response.data;
+};
+
+export const updateLabour = async (id, data) => {
+  const response = await labourApi.put(
+    `/${id}`,
     data
   );
 

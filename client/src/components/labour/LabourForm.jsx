@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { addLabour } from "../../services/labourService";
+import { addLabour, updateLabour } from "../../services/labourService";
 import { getSites } from "../../api/siteApi";
 import ErrorDialog from "../common/ErrorDialog";
 import FieldError from "../common/FieldError";
@@ -8,12 +8,13 @@ import {
   validatePositiveNumber,
 } from "../../utils/formValidation";
 
-function LabourForm() {
-  const [labourName, setLabourName] = useState("");
-  const [contact, setContact] = useState("");
-  const [dailyWage, setDailyWage] = useState("");
-  const [address, setAddress] = useState("");
-  const [siteId, setSiteId] = useState("");
+function LabourForm({ labour = null, onSaved }) {
+  const isEdit = Boolean(labour?.id);
+  const [labourName, setLabourName] = useState(labour?.labour_name || "");
+  const [contact, setContact] = useState(labour?.contact_number || "");
+  const [dailyWage, setDailyWage] = useState(labour?.daily_wage || "");
+  const [address, setAddress] = useState(labour?.address || "");
+  const [siteId, setSiteId] = useState(labour?.site_id ? String(labour.site_id) : "");
   const [sites, setSites] = useState([]);
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState({});
@@ -24,6 +25,15 @@ function LabourForm() {
       .then((response) => setSites(response.data.sites || []))
       .catch(() => setSites([]));
   }, []);
+
+  useEffect(() => {
+    setLabourName(labour?.labour_name || "");
+    setContact(labour?.contact_number || "");
+    setDailyWage(labour?.daily_wage || "");
+    setAddress(labour?.address || "");
+    setSiteId(labour?.site_id ? String(labour.site_id) : "");
+    setFieldErrors({});
+  }, [labour]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -50,21 +60,30 @@ function LabourForm() {
     setLoading(true);
 
     try {
-      await addLabour({
+      const payload = {
         site_id: siteId || null,
         labour_name: labourName,
         contact_number: contact,
         address,
         daily_wage: dailyWage,
-      });
+      };
 
-      setLabourName("");
-      setContact("");
-      setDailyWage("");
-      setAddress("");
-      setSiteId("");
+      if (isEdit) {
+        await updateLabour(labour.id, payload);
+      } else {
+        await addLabour(payload);
+      }
+
+      if (!isEdit) {
+        setLabourName("");
+        setContact("");
+        setDailyWage("");
+        setAddress("");
+        setSiteId("");
+      }
       setFieldErrors({});
       window.dispatchEvent(new Event("labours:changed"));
+      onSaved?.();
     } catch (err) {
       setError(err.response?.data?.message || "Could not save labour");
     } finally {
@@ -75,7 +94,7 @@ function LabourForm() {
   return (
     <>
     <div style={cardStyle}>
-      <h2 style={headingStyle}>Add Labour</h2>
+      <h2 style={headingStyle}>{isEdit ? "Edit Labour" : "Add Labour"}</h2>
 
       <form onSubmit={handleSubmit} noValidate>
         {error && <p style={errorStyle}>{error}</p>}
@@ -166,7 +185,7 @@ function LabourForm() {
         </div>
 
         <button type="submit" style={buttonStyle} disabled={loading}>
-          {loading ? "Saving..." : "Save Labour"}
+          {loading ? "Saving..." : isEdit ? "Update Labour" : "Save Labour"}
         </button>
       </form>
     </div>

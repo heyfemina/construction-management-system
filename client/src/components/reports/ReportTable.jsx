@@ -26,6 +26,15 @@ function ReportTable({
 
       <div className="report-table-scroll">
         <table className="professional-table report-table">
+          <colgroup>
+            {columns.map((column) => (
+              <col
+                key={column.key}
+                style={column.width ? { width: column.width } : undefined}
+              />
+            ))}
+          </colgroup>
+
           <thead>
             <tr>
               {columns.map((column) => (
@@ -97,7 +106,7 @@ function StateRow({ colSpan, text, type = "empty" }) {
 function getColumnClass(column) {
   const key = column.key.toLowerCase();
   const label = column.label.toLowerCase();
-  const classes = [];
+  const classes = column.className ? [column.className] : [];
 
   if (
     key.includes("amount") ||
@@ -142,7 +151,7 @@ function getColumnClass(column) {
 }
 
 function formatCell(value, column) {
-  if (value === null || value === undefined || value === "") {
+  if (value === null || value === undefined || value === "" || value === "-") {
     return <span className="cell-muted">-</span>;
   }
 

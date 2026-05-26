@@ -1,30 +1,30 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import MaterialForm from "../../components/materials/MaterialForm";
-import { getMaterial } from "../../services/materialService";
+import LabourForm from "../../components/labour/LabourForm";
+import { getLabour } from "../../services/labourService";
 
-function EditMaterial() {
+function EditLabour() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [material, setMaterial] = useState(null);
+  const [labour, setLabour] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const loadMaterial = async () => {
+    const loadLabour = async () => {
       try {
         setLoading(true);
-        const data = await getMaterial(id);
-        setMaterial(data.material);
+        const data = await getLabour(id);
+        setLabour(data.labour);
         setError("");
       } catch (err) {
-        setError(err.response?.data?.message || "Could not load material");
+        setError(err.response?.data?.message || "Could not load labour");
       } finally {
         setLoading(false);
       }
     };
 
-    loadMaterial();
+    loadLabour();
   }, [id]);
 
   return (
@@ -36,16 +36,13 @@ function EditMaterial() {
           marginBottom: "20px",
         }}
       >
-        Edit Material
+        Edit Labour
       </h1>
 
       {loading && <p>Loading...</p>}
       {!loading && error && <p style={errorStyle}>{error}</p>}
-      {!loading && !error && material && (
-        <MaterialForm
-          material={material}
-          onSaved={() => navigate("/materials")}
-        />
+      {!loading && !error && labour && (
+        <LabourForm labour={labour} onSaved={() => navigate("/labour")} />
       )}
     </div>
   );
@@ -56,4 +53,4 @@ const errorStyle = {
   fontWeight: "600",
 };
 
-export default EditMaterial;
+export default EditLabour;

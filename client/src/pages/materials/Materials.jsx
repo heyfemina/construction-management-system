@@ -69,6 +69,7 @@ function Materials() {
           display: "grid",
           gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))",
           gap: "20px",
+          alignItems: "stretch",
         }}
       >
         <SummaryCard
@@ -85,17 +86,14 @@ function Materials() {
         />
       </div>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit,minmax(400px,1fr))",
-          gap: "20px",
-          marginTop: "25px",
-        }}
-      >
-        <MaterialForm />
+      <div className="material-forms-grid">
+        <div className="material-form-sidebar">
+          <MaterialForm />
+        </div>
 
-        <PurchaseForm />
+        <div className="material-form-main">
+          <PurchaseForm />
+        </div>
       </div>
 
       <UsageForm />
@@ -114,10 +112,15 @@ function SummaryCard({ title, value, detail, tone = "#2563eb" }) {
     <div
       style={{
         backgroundColor: "#ffffff",
-        padding: "22px",
+        minHeight: "132px",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        padding: "24px",
         borderRadius: "12px",
         border: "1px solid #e5e7eb",
         boxShadow: "0 8px 24px rgba(15,23,42,0.06)",
+        boxSizing: "border-box",
       }}
     >
       <p
@@ -125,6 +128,7 @@ function SummaryCard({ title, value, detail, tone = "#2563eb" }) {
           margin: 0,
           color: "#64748b",
           fontWeight: "700",
+          fontSize: "14px",
         }}
       >
         {title}
@@ -134,6 +138,7 @@ function SummaryCard({ title, value, detail, tone = "#2563eb" }) {
         style={{
           margin: "10px 0 6px",
           fontSize: "34px",
+          lineHeight: "1",
           fontWeight: "800",
           color: tone,
         }}

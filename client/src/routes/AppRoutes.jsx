@@ -23,6 +23,7 @@ import VendorDetails from "../pages/vendors/VendorDetails";
 import VendorLedgerPage from "../pages/vendors/VendorLedgerPage";
 
 import Labour from "../pages/labour/Labour";
+import EditLabour from "../pages/labour/EditLabour";
 import Attendance from "../pages/labour/Attendance";
 import WageManagement from "../pages/labour/WageManagement";
 import LabourLedgerPage from "../pages/labour/LabourLedgerPage";
@@ -137,6 +138,11 @@ function AppRoutes() {
         <Route
           path="/labour"
           element={privatePage(<Labour />)}
+        />
+
+        <Route
+          path="/labour/edit/:id"
+          element={privatePage(<EditLabour />)}
         />
 
         <Route

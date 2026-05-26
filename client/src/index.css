@@ -1258,6 +1258,12 @@ a {
   min-width: 760px;
 }
 
+.report-table {
+  table-layout: fixed;
+  width: 100%;
+  min-width: 1150px;
+}
+
 .app-main :where(th) {
   background:
     linear-gradient(180deg, color-mix(in srgb, var(--surface-subtle) 88%, var(--surface)), var(--surface-subtle)) !important;
@@ -1282,6 +1288,10 @@ a {
   border-bottom: 1px solid var(--border) !important;
 }
 
+.report-table :where(th, td) {
+  vertical-align: middle;
+}
+
 .app-main :where(tbody tr) {
   transition:
     background 0.16s ease,
@@ -1302,6 +1312,10 @@ a {
 
 .app-main :where(td:last-child) {
   white-space: nowrap;
+}
+
+.report-table :where(td:last-child) {
+  white-space: normal;
 }
 
 .app-main :where(td:last-child button) {
@@ -1336,10 +1350,56 @@ a {
 .app-main :where(.is-money, .is-number) {
   text-align: right;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.app-main :where(.is-finance-total) {
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.app-main :where(th.is-money, th.is-number) {
+  text-align: right;
+}
+
+.app-main :where(th.is-finance-total) {
+  text-align: center;
 }
 
 .app-main :where(.is-date) {
+  text-align: center;
   white-space: nowrap;
+}
+
+.app-main :where(th.is-date) {
+  text-align: center;
+}
+
+.app-main :where(.is-status) {
+  text-align: center;
+}
+
+.app-main :where(.is-notes) {
+  min-width: 220px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.app-main :where(th.is-notes) {
+  text-align: left;
+}
+
+.app-main :where(.is-money .cell-muted, .is-number .cell-muted) {
+  display: inline-block;
+  width: 100%;
+  text-align: right;
+}
+
+.app-main :where(.is-finance-total .cell-muted) {
+  display: inline-block;
+  width: 100%;
+  text-align: center;
 }
 
 .cell-money {
@@ -1389,6 +1449,48 @@ a {
 
 .export-button-excel {
   background: linear-gradient(135deg, #059669, #0f766e) !important;
+}
+
+.material-forms-grid {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.78fr) minmax(460px, 1.35fr);
+  gap: 22px;
+  align-items: stretch;
+  margin-top: 25px;
+}
+
+.material-form-sidebar,
+.material-form-main {
+  display: flex;
+  min-width: 0;
+}
+
+.material-form-sidebar > *,
+.material-form-main > * {
+  width: 100%;
+}
+
+.material-total-cost {
+  margin-bottom: 18px;
+  padding: 14px 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #f8fafc;
+  color: #111827 !important;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+:root[data-theme="dark"] .material-total-cost {
+  border-color: #475569;
+  background: #f8fafc;
+  color: #111827 !important;
+}
+
+@media (max-width: 1080px) {
+  .material-forms-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .dashboard-kpi-card {
