@@ -66,9 +66,9 @@ function Sidebar({
   return (
     <aside className={`sidebar ${isOpen ? "sidebar-open" : ""} ${isCollapsed ? "sidebar-collapsed" : ""}`}>
       <div className="sidebar-brand">
-        <div className="sidebar-logo">CP</div>
+        <div className="sidebar-logo">C</div>
         <div className="sidebar-brand-copy">
-          <h1>ConstructPro</h1>
+          <h1>Coretechsoftware</h1>
           {/* <p>Project Management</p> */}
         </div>
 
