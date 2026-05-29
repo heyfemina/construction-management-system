@@ -10,6 +10,7 @@ import Register from "../pages/auth/Register";
 import ForgotPassword from "../pages/auth/ForgotPassword";
 
 import Dashboard from "../pages/dashboard/Dashboard";
+import Settings from "../pages/settings/Settings";
 
 import Materials from "../pages/materials/Materials";
 import AddMaterial from "../pages/materials/AddMaterial";
@@ -82,6 +83,11 @@ function AppRoutes() {
         <Route
           path="/dashboard"
           element={privatePage(<Dashboard />)}
+        />
+
+        <Route
+          path="/settings"
+          element={privatePage(<Settings />)}
         />
 
         {/* MATERIAL ROUTES */}

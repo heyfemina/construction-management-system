@@ -185,3 +185,85 @@ export const getProfile = async (req, res) => {
     });
   }
 };
+
+export const updateProfile = async (req, res) => {
+  try {
+    const { name, email, password } = req.body;
+    const cleanName = (name || "").trim();
+    const cleanEmail = normalizeEmail(email);
+    const cleanPassword = (password || "").trim();
+
+    if (!cleanName || !cleanEmail) {
+      return res.status(400).json({
+        success: false,
+        message: "Name and email are required",
+      });
+    }
+
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailPattern.test(cleanEmail)) {
+      return res.status(400).json({
+        success: false,
+        message: "Enter a valid email address",
+      });
+    }
+
+    const existingUser = await pool.query(
+      `
+      SELECT id
+      FROM users
+      WHERE email = $1 AND id <> $2
+      `,
+      [cleanEmail, req.user.id]
+    );
+
+    if (existingUser.rows.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Email is already in use",
+      });
+    }
+
+    if (cleanPassword && cleanPassword.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: "Password must be at least 6 characters",
+      });
+    }
+
+    const hashedPassword = cleanPassword
+      ? await bcrypt.hash(cleanPassword, 10)
+      : null;
+
+    const result = await pool.query(
+      `
+      UPDATE users
+      SET
+        name = $1,
+        email = $2,
+        password = COALESCE($3, password)
+      WHERE id = $4
+      RETURNING id, name, email, role, created_at
+      `,
+      [cleanName, cleanEmail, hashedPassword, req.user.id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      user: result.rows[0],
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};

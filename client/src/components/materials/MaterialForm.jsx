@@ -90,32 +90,19 @@ function MaterialForm({ material = null, onSaved }) {
 
   return (
     <>
-    <div
-      style={{
-        backgroundColor: "#ffffff",
-        padding: "22px",
-        borderRadius: "12px",
-        border: "1px solid #e5e7eb",
-        boxShadow: "0 8px 24px rgba(15,23,42,0.06)",
-        height: "100%",
-        boxSizing: "border-box",
-      }}
-    >
-      <h2
-        style={{
-          fontSize: "24px",
-          fontWeight: "700",
-          margin: "0 0 18px",
-        }}
-      >
-        {isEdit ? "Edit Material" : "Add Material"}
-      </h2>
+    <div className="material-entry-card">
+      <div className="material-entry-header">
+        <div>
+          <p>Material</p>
+          <h2>{isEdit ? "Edit Material" : "Add Material"}</h2>
+        </div>
+      </div>
 
-      <form onSubmit={handleSubmit} noValidate>
+      <form className="material-entry-form" onSubmit={handleSubmit} noValidate>
         {error && <p style={errorStyle}>{error}</p>}
 
-        <div style={{ marginBottom: "15px" }}>
-          <label style={labelStyle}>Material Name</label>
+        <div className="material-field">
+          <label>Material Name</label>
 
           <input
             type="text"
@@ -127,13 +114,12 @@ function MaterialForm({ material = null, onSaved }) {
               setFieldErrors((current) => ({ ...current, materialName: "" }));
             }}
             placeholder="Enter material name"
-            style={inputStyle}
           />
           <FieldError message={fieldErrors.materialName} />
         </div>
 
-        <div style={{ marginBottom: "15px" }}>
-          <label style={labelStyle}>Unit</label>
+        <div className="material-field">
+          <label>Unit</label>
 
           <input
             type="text"
@@ -145,13 +131,12 @@ function MaterialForm({ material = null, onSaved }) {
               setFieldErrors((current) => ({ ...current, unit: "" }));
             }}
             placeholder="Bag / Kg / Ton / Piece"
-            style={inputStyle}
           />
           <FieldError message={fieldErrors.unit} />
         </div>
 
-        <div style={{ marginBottom: "15px" }}>
-          <label style={labelStyle}>Site</label>
+        <div className="material-field">
+          <label>Site</label>
 
           <select
             required
@@ -160,7 +145,6 @@ function MaterialForm({ material = null, onSaved }) {
               setSiteId(e.target.value);
               setFieldErrors((current) => ({ ...current, siteId: "" }));
             }}
-            style={inputStyle}
           >
             <option value="">No site selected</option>
             {sites.map((site) => (
@@ -172,7 +156,7 @@ function MaterialForm({ material = null, onSaved }) {
           <FieldError message={fieldErrors.siteId} />
         </div>
 
-        <button type="submit" style={buttonStyle} disabled={loading}>
+        <button type="submit" className="material-form-button" disabled={loading}>
           {loading ? "Saving..." : isEdit ? "Update Material" : "Save Material"}
         </button>
       </form>
@@ -186,36 +170,9 @@ function MaterialForm({ material = null, onSaved }) {
   );
 }
 
-const inputStyle = {
-  width: "100%",
-  boxSizing: "border-box",
-  padding: "12px",
-  marginTop: "5px",
-  borderRadius: "8px",
-  border: "1px solid #d1d5db",
-};
-
-const labelStyle = {
-  display: "block",
-  color: "#374151",
-  fontWeight: "700",
-  fontSize: "14px",
-};
-
-const buttonStyle = {
-  width: "100%",
-  padding: "12px",
-  backgroundColor: "#2563eb",
-  color: "#ffffff",
-  border: "none",
-  borderRadius: "8px",
-  cursor: "pointer",
-  fontWeight: "600",
-};
-
 const errorStyle = {
   color: "#dc2626",
-  marginBottom: "12px",
+  margin: "0",
   fontWeight: "600",
 };
 

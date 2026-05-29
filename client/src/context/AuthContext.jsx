@@ -27,6 +27,13 @@ function AuthProvider({ children }) {
     setToken(authToken);
   };
 
+  const updateUser = (nextUser) => {
+    setUser((currentUser) => ({
+      ...currentUser,
+      ...nextUser,
+    }));
+  };
+
   const logout = () => {
     setUser(null);
     setToken(null);
@@ -39,6 +46,7 @@ function AuthProvider({ children }) {
         token,
         isAuthenticated: Boolean(token),
         login,
+        updateUser,
         logout,
       }}
     >

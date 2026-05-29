@@ -254,13 +254,18 @@ function Navbar({ onMenuClick }) {
           )}
         </button>
 
-        <div className="topbar-user">
+        <button
+          type="button"
+          className="topbar-user topbar-user-button"
+          onClick={() => navigate("/settings")}
+          aria-label="Open settings"
+        >
           <div className="topbar-avatar">{initial}</div>
           <div className="topbar-user-text">
             <strong>{user?.name || "Admin"}</strong>
             <span>{user?.email || "Signed in"}</span>
           </div>
-        </div>
+        </button>
 
         <button
           type="button"

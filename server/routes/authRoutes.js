@@ -4,6 +4,7 @@ import {
   getProfile,
   loginUser,
   registerUser,
+  updateProfile,
 } from "../controllers/authController.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 
@@ -14,5 +15,7 @@ router.post("/login", loginUser);
 router.post("/register", registerUser);
 
 router.get("/profile", authMiddleware, getProfile);
+
+router.patch("/profile", authMiddleware, updateProfile);
 
 export default router;

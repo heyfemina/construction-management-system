@@ -114,28 +114,15 @@ function PurchaseForm() {
 
   return (
     <>
-    <div
-      style={{
-        backgroundColor: "#ffffff",
-        padding: "22px",
-        borderRadius: "12px",
-        border: "1px solid #e5e7eb",
-        boxShadow: "0 8px 24px rgba(15,23,42,0.06)",
-        height: "100%",
-        boxSizing: "border-box",
-      }}
-    >
-      <h2
-        style={{
-          fontSize: "24px",
-          fontWeight: "700",
-          margin: "0 0 18px",
-        }}
-      >
-        Material Purchase
-      </h2>
+    <div className="material-entry-card">
+      <div className="material-entry-header">
+        <div>
+          <p>Purchase</p>
+          <h2>Material Purchase</h2>
+        </div>
+      </div>
 
-      <form onSubmit={handleSubmit} noValidate>
+      <form className="material-entry-form" onSubmit={handleSubmit} noValidate>
         {error && <p style={errorStyle}>{error}</p>}
 
         <SelectField
@@ -158,7 +145,7 @@ function PurchaseForm() {
           }))}
         />
 
-        <div style={twoColumnGridStyle}>
+        <div className="material-form-grid material-form-grid-two">
           <SelectField
             label="Vendor"
             required
@@ -188,7 +175,7 @@ function PurchaseForm() {
           </p>
         )}
 
-        <div style={threeColumnGridStyle}>
+        <div className="material-form-grid material-form-grid-three">
           <InputField
             label="Quantity"
             value={quantity}
@@ -215,7 +202,7 @@ function PurchaseForm() {
           Total Cost: Rs. {total}
         </div>
 
-        <button type="submit" style={buttonStyle} disabled={saving}>
+        <button type="submit" className="material-form-button" disabled={saving}>
           {saving ? "Saving..." : "Save Purchase"}
         </button>
       </form>
@@ -237,13 +224,12 @@ function SelectField({
   required = false,
 }) {
   return (
-    <div style={fieldStyle}>
-      <label style={labelStyle}>{label}</label>
+    <div className="material-field">
+      <label>{label}</label>
       <select
         required={required}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        style={inputStyle}
       >
         <option value="">Select {label.toLowerCase()}</option>
         {options.map((option) => (
@@ -258,8 +244,8 @@ function SelectField({
 
 function InputField({ label, value, onChange, placeholder }) {
   return (
-    <div style={fieldStyle}>
-      <label style={labelStyle}>{label}</label>
+    <div className="material-field">
+      <label>{label}</label>
       <input
         type="number"
         min="0"
@@ -268,63 +254,19 @@ function InputField({ label, value, onChange, placeholder }) {
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        style={inputStyle}
       />
     </div>
   );
 }
 
-const inputStyle = {
-  width: "100%",
-  boxSizing: "border-box",
-  padding: "12px",
-  marginTop: "5px",
-  borderRadius: "8px",
-  border: "1px solid #d1d5db",
-};
-
-const fieldStyle = {
-  marginBottom: "15px",
-};
-
-const twoColumnGridStyle = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-  gap: "14px",
-};
-
-const threeColumnGridStyle = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
-  gap: "14px",
-};
-
-const labelStyle = {
-  display: "block",
-  color: "#374151",
-  fontWeight: "700",
-  fontSize: "14px",
-};
-
-const buttonStyle = {
-  width: "100%",
-  padding: "12px",
-  backgroundColor: "#059669",
-  color: "#ffffff",
-  border: "none",
-  borderRadius: "8px",
-  cursor: "pointer",
-  fontWeight: "600",
-};
-
 const errorStyle = {
   color: "#dc2626",
-  marginBottom: "12px",
+  margin: "0",
   fontWeight: "600",
 };
 
 const hintStyle = {
-  margin: "-6px 0 15px",
+  margin: "-2px 0 0",
   color: "#6b7280",
   fontWeight: "600",
 };

@@ -1,18 +1,23 @@
 import { Link, useLocation } from "react-router-dom";
+import { useContext } from "react";
 import {
   BarChart3,
   BookOpen,
   Briefcase,
   Building2,
   CalendarCheck,
+  ChevronLeft,
+  ChevronRight,
   DollarSign,
   FileText,
   Home,
   MapPin,
   Package,
+  Settings,
   Users,
   X,
 } from "lucide-react";
+import { AuthContext } from "../../context/AuthContext";
 import openSoftwareGuidePDF from "../../utils/openSoftwareGuidePDF";
 
 const menuGroups = [
@@ -26,6 +31,7 @@ const menuGroups = [
       { name: "Wage & Payments", path: "/wage-management", icon: CalendarCheck },
       { name: "Finance", path: "/finance", icon: DollarSign },
       { name: "Sites", path: "/sites", icon: MapPin },
+      { name: "Settings", path: "/settings", icon: Settings },
     ],
   },
   {
@@ -41,8 +47,16 @@ const menuGroups = [
   },
 ];
 
-function Sidebar({ isOpen = false, onClose }) {
+function Sidebar({
+  isOpen = false,
+  isCollapsed = false,
+  onClose,
+  onToggleCollapse,
+}) {
   const location = useLocation();
+  const { user } = useContext(AuthContext);
+  const userName = user?.name || "Admin";
+  const userInitial = (userName || user?.email || "A").charAt(0).toUpperCase();
 
   const handleOpenGuide = () => {
     openSoftwareGuidePDF();
@@ -50,7 +64,7 @@ function Sidebar({ isOpen = false, onClose }) {
   };
 
   return (
-    <aside className={`sidebar ${isOpen ? "sidebar-open" : ""}`}>
+    <aside className={`sidebar ${isOpen ? "sidebar-open" : ""} ${isCollapsed ? "sidebar-collapsed" : ""}`}>
       <div className="sidebar-brand">
         <div className="sidebar-logo">CP</div>
         <div className="sidebar-brand-copy">
@@ -68,6 +82,20 @@ function Sidebar({ isOpen = false, onClose }) {
         </button>
       </div>
 
+      <button
+        type="button"
+        className="sidebar-collapse"
+        onClick={onToggleCollapse}
+        aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+        title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+      >
+        {isCollapsed ? (
+          <ChevronRight size={18} strokeWidth={2.4} />
+        ) : (
+          <ChevronLeft size={18} strokeWidth={2.4} />
+        )}
+      </button>
+
       <nav className="sidebar-nav">
         {menuGroups.map((group) => (
           <div className="sidebar-group" key={group.title}>
@@ -84,6 +112,7 @@ function Sidebar({ isOpen = false, onClose }) {
                   to={menu.path}
                   className={`sidebar-link ${active ? "active" : ""}`}
                   onClick={onClose}
+                  title={isCollapsed ? menu.name : undefined}
                 >
                   <Icon size={18} strokeWidth={2.2} />
                   <span>{menu.name}</span>
@@ -99,6 +128,7 @@ function Sidebar({ isOpen = false, onClose }) {
           type="button"
           className="sidebar-guide-button"
           onClick={handleOpenGuide}
+          title={isCollapsed ? "How to Use" : undefined}
         >
           <BookOpen size={18} strokeWidth={2.2} />
           <span>How to Use</span>
@@ -106,9 +136,9 @@ function Sidebar({ isOpen = false, onClose }) {
       </div>
 
       <div className="sidebar-user">
-        <div className="sidebar-user-avatar">A</div>
+        <div className="sidebar-user-avatar">{userInitial}</div>
         <div>
-          <h4>Admin</h4>
+          <h4>{userName}</h4>
           <p>Project Control</p>
         </div>
       </div>
