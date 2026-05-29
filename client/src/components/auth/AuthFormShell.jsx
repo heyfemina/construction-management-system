@@ -9,9 +9,9 @@ function AuthFormShell({
   return (
     <div className="auth-form-wrap">
       <div className="auth-brand-row">
-        <div className="auth-brand-mark">CP</div>
+        <div className="auth-brand-mark">CS</div>
         <div>
-          <strong>ConstructPro</strong>
+          <strong>Coretech Software</strong>
           <span>Secure Admin Console</span>
         </div>
       </div>
